@@ -45,7 +45,7 @@ data CHS = CHS
 instance Binary CHS where
   get = do
     (h, s, c) <- (,,) <$> getWord8 <*> getWord8 <*> (fromIntegral <$> getWord8)
-    return . CHS h ((s << 2) >> 2) $ ((fromIntegral s) << 2) .&. fromIntegral c
+    return . CHS h ((s << 2) >> 2) $ ((fromIntegral s .&. 0xc0) << 2) .|. fromIntegral c
     where (<<) = shiftL; (>>) = shiftR;
   put (CHS h s c) = do
     putWord8 h
