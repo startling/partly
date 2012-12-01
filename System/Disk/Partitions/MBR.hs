@@ -65,8 +65,7 @@ instance Binary PartitionTable where
   put = (sequence_ .) . sequence $ [put . first, put . second
     , put . third, put . fourth, put . fifth]
 
--- | The structure of a Master Boot Record is as follows, with some optional
--- fields for optional data.
+-- | The structure of a Master Boot Record is as follows...
 data BootRecord = BootRecord
   -- | The first piece of data on a disk with a Master Boot Record is some
   -- bootloader code that gets loaded to address 0x7c00 in memory. N.B:
@@ -81,7 +80,7 @@ data BootRecord = BootRecord
   deriving (Eq, Show)
 
 instance Binary BootRecord where
-  get = BootRecord <$> getByteString 446 <*> get <*> getWord16le
+  get = BootRecord <$> getByteString 446 <*> get <*> pure 0 -- getWord16le
   put = (sequence_ .) . sequence $ [ put . bootloader
     , put . partitions , putWord16le . bootSig ]
 
