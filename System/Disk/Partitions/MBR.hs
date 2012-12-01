@@ -3,10 +3,11 @@
 -- weird variations like AAP or NEWLDR.
 module System.Disk.Partitions.MBR where
 -- base:
+import Prelude hiding (head)
 import Control.Applicative
 import Control.Monad
 import Data.Word
-import Data.Bits (shiftL, (.|.))
+import Data.Bits (shiftL, shiftR, (.|.), (.&.))
 -- bytestring:
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
@@ -30,18 +31,42 @@ instance Binary Timestamp where
   put = (sequence_ .) . sequence $ [put . physicalDrive
     , put . seconds, put . minutes, put . hours]
 
+-- | A representation of the cylinder/head/sector address in MBRs.
+data CHS = CHS
+  -- | The head number.
+  { head     :: Word8
+  -- | The sector number; this is actually a six-bit number, but
+  -- Haskell doesn't have a convenient way to deal with those.
+  , sector   :: Word8
+  -- | The cylinder number; likewise, this is actually a 10-bit number.
+  , cylinder :: Word16 }
+  deriving (Eq, Show)
+
+instance Binary CHS where
+  get = do
+    (h, s, c) <- (,,) <$> getWord8 <*> getWord8 <*> (fromIntegral <$> getWord8)
+    return . CHS h ((s << 2) >> 2) $ ((fromIntegral s) << 2) .&. fromIntegral c
+    where (<<) = shiftL; (>>) = shiftR;
+  put (CHS h s c) = do
+    putWord8 h
+    -- Mask away the high two bits of s and use the high two bits of c.
+    putWord8 $ s .&. 0x3f .|. ((fromIntegral c >> 2) .&. 0xc0)
+    -- Mask away the high byte of c.
+    putWord8 . fromIntegral $ 0x00ff .&. c
+    where (>>) = shiftR
+    
 -- | Partition entries themselves are somewhat intricate.
 data PartitionEntry = PartitionEntry
   -- | A bitfield describing this partition. An 0x00 here means it's inactive;
   -- having bit 7 set (i.e. > 0x80) means bootable; anything less is invalid.
   { status        :: Word8
   -- | The CHS address of the first absolute sector of the partition.
-  , chsFirst      :: (Word8, Word8, Word8)
+  , chsFirst      :: CHS
   -- | A partition type; for specifics, see the following document:
   -- http://www.win.tue.nl/~aeb/partitions/partition_types-1.html
   , partitionType :: Word8
   -- | The CHS address of the last absolute sector of the partition.
-  , chsLast       :: (Word8, Word8, Word8)
+  , chsLast       :: CHS
   -- | The logical block address of the first absolute sector.
   , lbaFirst      :: Word32
   -- | The number of sectors in the partition.
