@@ -4,9 +4,12 @@
 module System.Disk.Partitions.MBR where
 -- base:
 import Control.Applicative
+import Control.Monad
 import Data.Word
+import Data.Bits (shiftL, (.|.))
+-- bytestring:
 import Data.ByteString (ByteString)
-import Control.Monad.Instances
+import qualified Data.ByteString as B
 -- binary:
 import Data.Binary
 import Data.Binary.Get
@@ -71,11 +74,6 @@ data BootRecord = BootRecord
   -- will also include the optional disk signature, if it exists -- thus this
   -- field is always 446 bytes long.
   { bootloader :: ByteString
-  -- | The completely-optional obsolete disk timestamp use by some old versions
-  -- of Windows.
-  , timestamp  :: Maybe Timestamp
-  -- | The optional disk signature.
-  , diskSig    :: Maybe Word32
   -- | Five partition table entries.
   , partitions :: PartitionTable
   -- | Finally, the boot signature. 
@@ -84,9 +82,29 @@ data BootRecord = BootRecord
 
 -- | Parse out a master boot record.
 getBootRecord :: Get BootRecord
-getBootRecord = do
-  -- TODO: parse the timestamp and the disk signature.
-  boot <- getByteString 446
-  part <- get
-  sign <- getWord16le
-  return $ BootRecord boot Nothing Nothing part sign
+getBootRecord = BootRecord <$> getByteString 446 <*> get <*> getWord16le
+
+-- | Get the completely-optional, obsolete disk timestamp used by some old
+-- versions of Windows.
+getTimestamp :: BootRecord -> Maybe Timestamp
+getTimestamp (BootRecord b _ _) = do
+  -- Check that it's long enough.
+  guard $ B.length b > 0x0df
+  -- Check that it has the two zero bytes at 0x0da.
+  guard $ B.index b 0x0da == 0 && B.index b 0x0db == 0
+  -- Get the four bytes at 0x0dc.
+  let _1 : _2 : _3 : _4 : _ = B.unpack . B.take 4 . B.drop 0x0dc $ b
+  return $ Timestamp _1 _2 _3 _4
+
+-- | Get the optional disk signature from a Bootrecord's bootloader.
+getDiskSignature :: BootRecord -> Maybe Word32
+getDiskSignature (BootRecord b _ _) = do
+  -- check that it's long enough.
+  guard $ B.length b > 0x1bd
+  -- Check that it has the two zero bytes at 0x1bc
+  guard $ B.index b 0x1bc == 0 && B.index b 0x1bd == 0
+  -- Get the four bytes at 0x1b8...
+  let [_1, _2, _3, _4] = map fromIntegral . B.unpack . B.take 4. B.drop 0x1b8 $ b
+  -- And construct a word32 out of them, little-endian style.
+  return $ (_4 << 24) .|. (_3 << 16) .|. (_2 << 8) .|. _1
+  where (<<) = shiftL
