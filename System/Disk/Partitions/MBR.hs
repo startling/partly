@@ -3,8 +3,14 @@
 -- weird variations like AAP or NEWLDR.
 module System.Disk.Partitions.MBR where
 -- base:
+import Control.Applicative
 import Data.Word
-import Data.ByteString
+import Data.ByteString.Lazy
+import Control.Monad.Instances
+-- binary:
+import Data.Binary
+import Data.Binary.Get
+import Data.Binary.Put
 
 -- | The so-called mystery bytes on Windows 95B, 98, 98SE, and Me --
 -- in fact, they're a timestamp and a drive number. 
@@ -15,6 +21,11 @@ data Timestamp = Timestamp
   , minutes       :: Word8
   , hours         :: Word8 }
   deriving (Eq, Show)
+
+instance Binary Timestamp where
+  get = Timestamp <$> get <*> get <*> get <*> get
+  put = (sequence_ .) . sequence $ [put . physicalDrive
+    , put . seconds, put . minutes, put . hours]
 
 -- | Partition entries themselves are somewhat intricate.
 data PartitionEntry = PartitionEntry
@@ -34,10 +45,22 @@ data PartitionEntry = PartitionEntry
   , sectors       :: Word32 }
   deriving (Eq, Show)
 
+instance Binary PartitionEntry where
+  get = PartitionEntry <$> get <*> get <*> get <*> get
+    <*> getWord32le <*> getWord32le
+  put = (sequence_ .) . sequence $ [put . status, put . chsFirst
+    , put . partitionType, put . chsLast
+    , putWord32le . lbaFirst, putWord32le . sectors]
+
 -- | An MBR partition table consists of (up to?) five partition entries.
 data PartitionTable = PartitionTable
   { first, second, third, fourth, fifth :: PartitionEntry }
   deriving (Eq, Show)
+
+instance Binary PartitionTable where
+  get = PartitionTable <$> get <*> get <*> get <*> get <*> get
+  put = (sequence_ .) . sequence $ [put . first, put . second
+    , put . third, put . fourth, put . fifth]
 
 -- | The structure of a Master Boot Record is as follows, with some optional
 -- fields for optional data.
