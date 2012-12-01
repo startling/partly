@@ -80,9 +80,10 @@ data BootRecord = BootRecord
   , bootSig    :: Word16 }
   deriving (Eq, Show)
 
--- | Parse out a master boot record.
-getBootRecord :: Get BootRecord
-getBootRecord = BootRecord <$> getByteString 446 <*> get <*> getWord16le
+instance Binary BootRecord where
+  get = BootRecord <$> getByteString 446 <*> get <*> getWord16le
+  put = (sequence_ .) . sequence $ [ put . bootloader
+    , put . partitions , putWord16le . bootSig ]
 
 -- | Get the completely-optional, obsolete disk timestamp used by some old
 -- versions of Windows.
