@@ -55,15 +55,15 @@ instance Binary PartitionEntry where
     , put . partitionType, put . chsLast
     , putWord32le . lbaFirst, putWord32le . sectors]
 
--- | An MBR partition table consists of (up to?) five partition entries.
+-- | An MBR partition table consists of (up to?) four partition entries.
 data PartitionTable = PartitionTable
-  { first, second, third, fourth, fifth :: PartitionEntry }
+  { first, second, third, fourth :: PartitionEntry }
   deriving (Eq, Show)
 
 instance Binary PartitionTable where
-  get = PartitionTable <$> get <*> get <*> get <*> get <*> get
+  get = PartitionTable <$> get <*> get <*> get <*> get
   put = (sequence_ .) . sequence $ [put . first, put . second
-    , put . third, put . fourth, put . fifth]
+    , put . third, put . fourth]
 
 -- | The structure of a Master Boot Record is as follows...
 data BootRecord = BootRecord
@@ -73,14 +73,14 @@ data BootRecord = BootRecord
   -- will also include the optional disk signature, if it exists -- thus this
   -- field is always 446 bytes long.
   { bootloader :: ByteString
-  -- | Five partition table entries.
+  -- | Four partition table entries.
   , partitions :: PartitionTable
   -- | Finally, the boot signature. 
   , bootSig    :: Word16 }
   deriving (Eq, Show)
 
 instance Binary BootRecord where
-  get = BootRecord <$> getByteString 446 <*> get <*> pure 0 -- getWord16le
+  get = BootRecord <$> getByteString 446 <*> get <*> getWord16le
   put = (sequence_ .) . sequence $ [ put . bootloader
     , put . partitions , putWord16le . bootSig ]
 
