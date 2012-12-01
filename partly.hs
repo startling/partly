@@ -1,6 +1,8 @@
 module Main where
 -- base:
 import Control.Applicative
+import Control.Monad
+import Text.Printf
 -- bytestring:
 import Data.ByteString (pack)
 import qualified Data.ByteString.Lazy as L
@@ -33,8 +35,8 @@ viewOptions = ViewBootRecord
       ( long "boot"
       & help "Whether to show the bootloader code." )
   <*> switch
-      ( long "signature"
-      & long "sig"
+      ( long "sig"
+      & long "signature"
       & help "Whether to show the boot signature.")
   <*> (ViewPartitionTable
       <$> switch
@@ -53,8 +55,8 @@ viewOptions = ViewBootRecord
       ( help "The file to parse and view."
       & metavar "file" )
 
-view :: Mod CommandFields ViewBootRecord
-view = command "view" $ ParserInfo
+viewCommand :: Mod CommandFields ViewBootRecord
+viewCommand = command "view" $ ParserInfo
   { infoParser      = viewOptions
   , infoFullDesc    = False
   , infoProgDesc    = "View the contents of an MBR."
@@ -62,10 +64,22 @@ view = command "view" $ ParserInfo
   , infoFooter      = ""
   , infoFailureCode = 1 }
 
+view :: ViewBootRecord -> IO ()
+view (ViewBootRecord sec sig (ViewPartitionTable _1 _2 _3 _4) f) = do
+  l <- L.readFile f
+  -- TODO: If all the flags are False, flip them all.
+  let br = runGet get l
+  when sec .
+    putStrLn $ "bootloader: " ++ show (bootloader br)
+  when sig . putStrLn .
+    printf "signature: 0x%04x" $ bootSig br
+  when (_1 || _2 || _3 || _4) . putStrLn $
+    printf "some partitions"
+
 master :: ParserInfo ViewBootRecord
-master = info (subparser view)
+master = info (subparser viewCommand)
   ( fullDesc
   & progDesc "View, create, or alter a DOS-style master boot record.")
 
 main :: IO ()
-main = execParser master >>= print
+main = execParser master >>= view
