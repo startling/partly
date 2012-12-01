@@ -44,16 +44,17 @@ data CHS = CHS
 
 instance Binary CHS where
   get = do
-    (h, s, c) <- (,,) <$> getWord8 <*> getWord8 <*> (fromIntegral <$> getWord8)
-    return . CHS h ((s << 2) >> 2) $ ((fromIntegral s .&. 0xc0) << 2) .|. fromIntegral c
-    where (<<) = shiftL; (>>) = shiftR;
+    (h, s, c) <- (,,) <$> getWord8 <*> getWord8 <*> getWord8
+    return . CHS h ((s `shiftL` 2) `shiftR` 2) $
+      -- Mask away everything but top two bits, convert to Word16, and then
+      -- OR it with c converted to Word16.
+      fromIntegral c .|. (fromIntegral s .&. 0xc0 `shiftL` 2)
   put (CHS h s c) = do
     putWord8 h
     -- Mask away the high two bits of s and use the high two bits of c.
-    putWord8 $ s .&. 0x3f .|. ((fromIntegral c >> 2) .&. 0xc0)
+    putWord8 $ (s .&. 0x3f) .|. fromIntegral (shiftR (c .&. 0x300) 2)
     -- Mask away the high byte of c.
     putWord8 . fromIntegral $ 0x00ff .&. c
-    where (>>) = shiftR
     
 -- | Partition entries themselves are somewhat intricate.
 data PartitionEntry = PartitionEntry
