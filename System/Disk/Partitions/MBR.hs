@@ -5,7 +5,7 @@ module System.Disk.Partitions.MBR where
 -- base:
 import Control.Applicative
 import Data.Word
-import Data.ByteString.Lazy
+import Data.ByteString (ByteString)
 import Control.Monad.Instances
 -- binary:
 import Data.Binary
@@ -81,3 +81,12 @@ data BootRecord = BootRecord
   -- | Finally, the boot signature. 
   , bootSig    :: Word16 }
   deriving (Eq, Show)
+
+-- | Parse out a master boot record.
+getBootRecord :: Get BootRecord
+getBootRecord = do
+  -- TODO: parse the timestamp and the disk signature.
+  boot <- getByteString 446
+  part <- get
+  sign <- getWord16le
+  return $ BootRecord boot Nothing Nothing part sign
