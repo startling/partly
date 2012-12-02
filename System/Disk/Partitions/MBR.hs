@@ -48,7 +48,7 @@ instance Binary CHS where
     return . CHS h ((s `shiftL` 2) `shiftR` 2) $
       -- Mask away everything but top two bits, convert to Word16, and then
       -- OR it with c converted to Word16.
-      fromIntegral c .|. (fromIntegral s .&. 0xc0 `shiftL` 2)
+      fromIntegral c .|. ((fromIntegral s .&. 0xc0) `shiftL` 2)
   put (CHS h s c) = do
     putWord8 h
     -- Mask away the high two bits of s and use the high two bits of c.
