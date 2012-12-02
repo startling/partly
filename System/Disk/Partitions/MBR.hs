@@ -52,7 +52,7 @@ instance Binary CHS where
   put (CHS h s c) = do
     putWord8 h
     -- Mask away the high two bits of s and use the high two bits of c.
-    putWord8 $ (s .&. 0x3f) .|. fromIntegral (shiftR (c .&. 0x300) 2)
+    putWord8 $ (s .&. 0x3f) .|. fromIntegral (shiftR c 2 .&. 0xc0)
     -- Mask away the high byte of c.
     putWord8 . fromIntegral $ 0x00ff .&. c
     
