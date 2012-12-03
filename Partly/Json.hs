@@ -2,6 +2,9 @@
 module Partly.Json where
 -- base:
 import Control.Applicative
+import Data.Bits
+import Data.Maybe
+import Data.Word
 import Text.Printf
 -- aeson:
 import Data.Aeson
@@ -42,10 +45,37 @@ instance ToJSON BootRecord where
 
 instance FromJSON CHS where
   parseJSON (Object v) = CHS
-      <$> v .: "head" <*> v .: "cylinder" <*> v .: "sector"
+    <$> v .: "head" <*> v .: "cylinder" <*> v .: "sector"
 
--- TODO: Figure out how to handle inconsistent data in partition table entries.
--- TODO: Write a way to turn some json into a partitionTableEntry, keeping in mind
---   that a user may supply too many or inconsistent data.
--- TODO: Apply that same thing in BootRecord, keeping in mind inconsistent data in
---   the boot signature.
+instance FromJSON PartitionEntry where
+  parseJSON (Object v) = PartitionEntry
+    <$> (v .: "status" >>= getStatus)
+    <*> (v .: "chsFirst" >>= parseJSON)
+    <*> (v .: "partitionType" >>= (.: "asNum"))
+    <*> (v .: "chsLast" >>= parseJSON)
+    <*>  v .: "lbaFirst"
+    <*>  v .: "sectorCount"
+    where
+      -- Check that "status" is consistent.
+      getStatus (Object v) = do
+        asNum <- v .:? "asNum"
+        chars <- v .:? "asHex"
+        final <- case (asNum, chars) of
+          (Nothing, Nothing) -> pure Nothing
+          (Nothing, Just s) -> pure (readMaybe s)
+          (Just x, Nothing) -> pure (Just x)
+          (Just x, Just s) -> if readMaybe s == Just x
+            then pure (Just x) else empty
+        boots <- v .:? "bootable"
+        case (boots, final) of
+          (Just False, Nothing) -> pure 0x00
+          (Just True, Nothing) -> pure 0x80 
+          (Just False, Just v) -> if v `shiftR` 7 == 1
+            then empty else pure v
+          (Just True, Just v) -> if v `shiftR` 7 == 1
+            then pure v else empty
+          (Nothing, Nothing) -> pure 0x80
+          (Nothing, Just v) -> pure v
+      -- Read a value, if possible.
+      readMaybe :: Read a => String -> Maybe a
+      readMaybe x = case reads x of [(v, "")] -> Just v; _ -> Nothing;
