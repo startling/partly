@@ -19,12 +19,13 @@ instance ToJSON PartitionEntry where
     , "lbaFirst" .= lbaFirst p
     , "chsLast" .= chsLast p
     , "sectorCount" .= sectors p
-    -- TODO: give this some additional structure, e.g.
-    -- { asNum : ... , bootable : ... }
-    , "status" .= status p
+    , "status" .= object
+      [ "bootable" .= bootable p
+      , "asNum" .= status p
+      , "asHex" .= (printf "0x%02x" (status p) :: String) ]
+    , "partitionType" .= partitionType p ]
     -- TODO: give this some additional structure, e.g.
     -- { asNum : ..., type : ... }
-    , "partitionType" .= partitionType p ]
     -- TODO: partition size, etc
 
 instance ToJSON PartitionTable where
