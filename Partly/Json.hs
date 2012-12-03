@@ -38,3 +38,6 @@ instance ToJSON BootRecord where
     , "partitions" .= partitions b ]
     -- TODO: should I include this here? idk.
     -- , "bootloader" .= bootloader b
+
+instance FromJSON CHS where
+   fromJSON v = CHS <$> v .: "head" <*> v .: "cylinder" <*> v .: "sector"
