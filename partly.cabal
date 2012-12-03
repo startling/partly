@@ -19,4 +19,5 @@ Executable partly
   build-depends:
       base
     , aeson
+    , aeson-pretty
     , optparse-applicative
