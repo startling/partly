@@ -18,9 +18,10 @@ import System.Disk.Partitions.MBR
 import Partly.Json
 
 data ViewJsonOptions = ViewJsonOptions
-  { uglify  :: Bool
-  , output  :: Maybe FilePath
-  , input   :: FilePath }
+  { uglify    :: Bool
+  , includeBL :: Bool
+  , output    :: Maybe FilePath
+  , input     :: FilePath }
   deriving (Eq, Show)
 
 viewJsonOptions :: Parser ViewJsonOptions
@@ -29,6 +30,10 @@ viewJsonOptions = ViewJsonOptions
       ( long "ugly"
       & short 'u'
       & help "Don't prettify the JSON before writing it." )
+  <*> switch
+      ( long "bootloader"
+      & short 'b'
+      & help "Include the bootloader, base64-encoded." )
   <*> maybeOption
       ( long "output"
       & short 'o'
@@ -42,10 +47,11 @@ viewJsonOptions = ViewJsonOptions
     maybeOption m = nullOption $ reader (Just . Just) & m & value Nothing
 
 viewJson :: ViewJsonOptions -> IO ()
-viewJson (ViewJsonOptions u o i) = do
+viewJson (ViewJsonOptions u b o i) = do
   mbr <- runGet (get :: Get BootRecord) <$> L.readFile i
-  writer $ encoder mbr
+  writer . encoder . convert $ mbr
   where
+    convert = if b then bootrecordWithBootloader else toJSON
     encoder = if u then encode else encodePretty
     writer = maybe L.putStr L.writeFile o
 
@@ -65,5 +71,3 @@ viewParser = info
 view :: ViewCommand -> IO ()
 view c = case c of ViewJson vj -> viewJson vj;
 
--- TODO: have a flag to include the base64-encoded bootloader in the JSON
---  complications: Data.Aeson.Pretty only lets me use ToJSON.
