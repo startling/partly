@@ -16,17 +16,17 @@ instance ToJSON CHS where
 instance ToJSON PartitionEntry where
   toJSON p = object
     [ "chsFirst" .= chsFirst p
-    , "lbaFirst" .= lbaFirst p
     , "chsLast" .= chsLast p
+    , "lbaFirst" .= lbaFirst p
     , "sectorCount" .= sectors p
     , "status" .= object
       [ "bootable" .= bootable p
       , "asNum" .= status p
       , "asHex" .= (printf "0x%02x" (status p) :: String) ]
-    , "partitionType" .= partitionType p ]
+    , "partitionType" .= partitionType p
     -- TODO: give this some additional structure, e.g.
     -- { asNum : ..., type : ... }
-    -- TODO: partition size, etc
+    , "size" .= (sectors p * 512) ]
 
 instance ToJSON PartitionTable where
   toJSON (PartitionTable _1 _2 _3 _4) = toJSON [_1, _2, _3, _4]
