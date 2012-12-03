@@ -1,6 +1,7 @@
 {-# Language OverloadedStrings #-}
 module Partly.Json where
 -- base:
+import Control.Applicative
 import Text.Printf
 -- aeson:
 import Data.Aeson
@@ -40,4 +41,6 @@ instance ToJSON BootRecord where
     -- , "bootloader" .= bootloader b
 
 instance FromJSON CHS where
-   fromJSON v = CHS <$> v .: "head" <*> v .: "cylinder" <*> v .: "sector"
+   parseJSON (Object v) = CHS
+      <$> v .: "head" <*> v .: "cylinder" <*> v .: "sector"
+
