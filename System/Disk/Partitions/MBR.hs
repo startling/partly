@@ -81,6 +81,10 @@ instance Binary PartitionEntry where
     , put . partitionType, put . chsLast
     , putWord32le . lbaFirst, putWord32le . sectors]
 
+-- | Whether this partition entry is marked bootable.
+bootable :: PartitionEntry -> Bool
+bootable = ((== 1) . (`shiftR` 7)) . status
+
 -- | An MBR partition table consists of (up to?) four partition entries.
 data PartitionTable = PartitionTable
   { first, second, third, fourth :: PartitionEntry }
