@@ -23,9 +23,9 @@ instance ToJSON PartitionEntry where
       [ "bootable" .= bootable p
       , "asNum" .= status p
       , "asHex" .= (printf "0x%02x" (status p) :: String) ]
-    , "partitionType" .= partitionType p ]
-    -- TODO: give this some additional structure, e.g.
-    -- { asNum : ..., type : ... }
+    , "partitionType" .= object
+      [ "asNum" .= partitionType p ]]
+      -- TODO: print the type of partition
 
 instance ToJSON PartitionTable where
   toJSON (PartitionTable _1 _2 _3 _4) = toJSON [_1, _2, _3, _4]
