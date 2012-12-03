@@ -35,8 +35,6 @@ instance ToJSON BootRecord where
   toJSON b = object
     [ "bootSignature" .= (bootSig b == 0xaa55)
     , "partitions" .= partitions b ]
-    -- TODO: should I include this here? idk.
-    -- , "bootloader" .= bootloader b
 
 instance FromJSON CHS where
   parseJSON (Object v) = CHS
