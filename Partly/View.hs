@@ -19,8 +19,8 @@ import Partly.Json
 
 data ViewJsonOptions = ViewJsonOptions
   { uglify :: Bool
-  , input  :: Maybe FilePath
-  , output :: Maybe FilePath }
+  , output :: Maybe FilePath
+  , input  :: FilePath }
   deriving (Eq, Show)
 
 viewJsonOptions :: Parser ViewJsonOptions
@@ -29,22 +29,21 @@ viewJsonOptions = ViewJsonOptions
       ( long "ugly"
       & short 'u'
       & help "Don't prettify the JSON before writing it." )
-  <*> argument (Just . Just)
-      ( help "The file to parse and inspect; defaults to stdin."
-      & metavar "input"
-      & value Nothing )
   <*> maybeOption
       ( long "output"
       & short 'o'
-      & help "A file to write to."
+      & help "A file to write to; defaults to stdout."
       & metavar "file" )
+  <*> strOption
+      ( help "The file to parse and inspect."
+      & metavar "input" )
   where
     maybeOption :: Mod OptionFields (Maybe String) -> Parser (Maybe String)
     maybeOption m = nullOption $ reader (Just . Just) & m & value Nothing
 
 viewJson :: ViewJsonOptions -> IO ()
-viewJson (ViewJsonOptions u i o) = do
-  mbr <- runGet (get :: Get BootRecord) <$> maybe L.getContents L.readFile i
+viewJson (ViewJsonOptions u o i) = do
+  mbr <- runGet (get :: Get BootRecord) <$> L.readFile i
   writer $ encoder mbr
   where
     encoder = if u then encode else encodePretty
