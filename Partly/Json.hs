@@ -55,13 +55,14 @@ instance FromJSON CHS where
 
 instance FromJSON PartitionEntry where
   parseJSON (Object v) = PartitionEntry
-    <$> (v .: "status" <&> \x -> if x then 0x80 else 0x00)
+    <$> (v .: "status" >>= \x -> case x of
+        (Bool b) -> return $ if b then 0x80 else 0x00
+        (Number n) -> parseJSON $ Number n)
     <*> (v .: "chsFirst" >>= parseJSON)
     <*> (v .: "partitionType")
     <*> (v .: "chsLast" >>= parseJSON)
     <*>  v .: "lbaFirst"
     <*>  v .: "sectorCount"
-    where (<&>) = flip fmap
 
 instance FromJSON PartitionTable where
   parseJSON (Array a) = PartitionTable
