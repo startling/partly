@@ -39,16 +39,15 @@ instance ToJSON PartitionTable where
   toJSON (PartitionTable _1 _2 _3 _4) = toJSON [_1, _2, _3, _4]
 
 instance ToJSON BootRecord where
-  toJSON b = object
-    [ "bootSignature" .= (bootSig b == 0xaa55)
-    , "partitions" .= partitions b ]
+  toJSON = bootRecordToJson False
 
--- | Write a boot record to JSON with the bootloader base64-encoded.
-bootrecordWithBootloader :: BootRecord -> Value
-bootrecordWithBootloader b = object
+-- | Write a boot record to JSON, given whether to include the
+-- base64-encoded bootloader.
+bootRecordToJson :: Bool -> BootRecord -> Value
+bootRecordToJson i b = object $
   [ "bootSignature" .= (bootSig b == 0xaa55)
-  , "partitions" .= partitions b
-  , "bootloader" .= Base64.encode (bootloader b) ]
+  , "partitions" .= partitions b ]
+  ++ if i then [ "bootloader" .= Base64.encode (bootloader b) ] else []
 
 instance FromJSON CHS where
   parseJSON (Object v) = CHS
