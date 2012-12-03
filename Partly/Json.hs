@@ -74,7 +74,11 @@ instance FromJSON PartitionTable where
 
 instance FromJSON BootRecord where
   parseJSON (Object v) = do
-    sig <- v .:? "bootSignature" <&> maybe 0xaa55 (if' 0xaa55 0)
+    sig <- v .:? "bootSignature" >>= \x -> case x of
+      Nothing -> pure 0xaa55
+      (Just (Bool True)) -> pure 0xaa55
+      (Just (Bool False)) -> pure 0xaa55
+      (Just n) -> parseJSON n
     ptt <- v .: "partitions" >>= parseJSON
     btl <- v .: "bootloader" <&> maybe emptyBootloader Base64.decodeLenient
     return $ BootRecord btl ptt sig
