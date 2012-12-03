@@ -49,9 +49,8 @@ viewJsonOptions = ViewJsonOptions
 viewJson :: ViewJsonOptions -> IO ()
 viewJson (ViewJsonOptions u b o i) = do
   mbr <- runGet (get :: Get BootRecord) <$> L.readFile i
-  writer . encoder . convert $ mbr
+  writer . encoder . bootRecordToJson b $ mbr
   where
-    convert = if b then bootrecordWithBootloader else toJSON
     encoder = if u then encode else encodePretty
     writer = maybe L.putStr L.writeFile o
 
