@@ -35,6 +35,6 @@ instance ToJSON BootRecord where
     [ "bootSignature" .= object
       [ "asNum" .= bootSig b
       , "asHex" .= (printf "0x%04x" (bootSig b) :: String) ]
-    , "partitions" .= partitions b
+    , "partitions" .= partitions b ]
     -- TODO: should I include this here? idk.
-    , "bootloader" .= bootloader b ]
+    -- , "bootloader" .= bootloader b
