@@ -1,68 +1,62 @@
 module Partly.View where
 -- base:
 import Control.Applicative
-import Control.Monad
-import Text.Printf
 -- bytestring:
 import Data.ByteString (pack)
 import qualified Data.ByteString.Lazy as L
 -- binary:
-import Data.Binary
+import Data.Binary (get)
 import Data.Binary.Get
-import Data.Binary.Put
+-- aeson:
+import Data.Aeson
+-- aeson-pretty:
+import Data.Aeson.Encode.Pretty
 -- optparse-applicative:
 import Options.Applicative
 -- partly:
 import System.Disk.Partitions.MBR
+import Partly.Json
 
 data ViewBootRecord = ViewBootRecord
-  { viewBootSector :: Bool
-  , viewSignature  :: Bool
-  , viewPartitions :: ViewPartitionTable
-  , viewFile       :: FilePath }
-  deriving (Eq, Show)
-
-data ViewPartitionTable = ViewPartitionTable
-  { viewFirst  :: Bool
-  , viewSecond :: Bool
-  , viewThird  :: Bool
-  , viewFourth :: Bool }
+  { asJson :: Bool
+  , uglify :: Bool
+  , input  :: Maybe FilePath
+  , output :: Maybe FilePath }
   deriving (Eq, Show)
 
 viewOptions :: Parser ViewBootRecord
 viewOptions = ViewBootRecord
   <$> switch
-      ( long "boot"
-      & help "Whether to show the bootloader code." )
+      ( long "json"
+      & short 'j'
+      & help "Show the boot record as JSON." )
   <*> switch
-      ( long "sig"
-      & long "signature"
-      & help "Whether to show the boot signature.")
-  <*> (ViewPartitionTable
-      <$> switch
-          ( short '1'
-          & help "Whether to show the first partition.")
-      <*> switch
-          ( short '2'
-          & help "Whether to show the second partition.")
-      <*> switch
-          ( short '3'
-          & help "Whether to show the third partition.")
-      <*> switch
-          ( short '4'
-          & help "Whether to show the fourth partition."))
-  <*> argument Just
-      ( help "The file to parse and view."
+      ( long "ugly"
+      & short 'u'
+      & help "Don't prettify the JSON before writing it." )
+  <*> argument (Just . Just)
+      ( help "The file to parse and inspect; defaults to stdin."
+      & metavar "input"
+      & value Nothing )
+  <*> maybeOption
+      ( long "output"
+      & value Nothing
+      & short 'o'
+      & help "A file to write to."
       & metavar "file" )
+  where
+    maybeOption :: Mod OptionFields (Maybe String) -> Parser (Maybe String)
+    maybeOption m = nullOption $ reader (Just . Just) & m
 
 view :: ViewBootRecord -> IO ()
-view (ViewBootRecord sec sig (ViewPartitionTable _1 _2 _3 _4) f) = do
-  l <- L.readFile f
-  -- TODO: If all the flags are False, flip them all.
-  let br = runGet get l
-  when sec .
-    putStrLn $ "bootloader: " ++ show (bootloader br)
-  when sig . putStrLn .
-    printf "signature: 0x%04x" $ bootSig br
-  when (_1 || _2 || _3 || _4) . putStrLn $
-    printf "some partitions"
+view (ViewBootRecord j u i o) = do
+  mbr <- runGet (get :: Get BootRecord) <$> maybe L.getContents L.readFile i
+  let json = encoder mbr in case (j, o) of
+    (False, Nothing) -> print mbr
+    (False, Just f) -> writeFile f $ show mbr
+    (True, Nothing) -> L.putStr json
+    (True, Just f) -> L.writeFile f json
+  where
+    encoder :: ToJSON j => j -> L.ByteString
+    encoder = if u then encode else encodePretty
+
