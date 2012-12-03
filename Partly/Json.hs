@@ -41,6 +41,11 @@ instance ToJSON BootRecord where
     -- , "bootloader" .= bootloader b
 
 instance FromJSON CHS where
-   parseJSON (Object v) = CHS
+  parseJSON (Object v) = CHS
       <$> v .: "head" <*> v .: "cylinder" <*> v .: "sector"
 
+-- TODO: Figure out how to handle inconsistent data in partition table entries.
+-- TODO: Write a way to turn some json into a partitionTableEntry, keeping in mind
+--   that a user may supply too many or inconsistent data.
+-- TODO: Apply that same thing in BootRecord, keeping in mind inconsistent data in
+--   the boot signature.
