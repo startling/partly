@@ -30,8 +30,11 @@ instance ToJSON PartitionEntry where
     , "chsLast" .= chsLast p
     , "lbaFirst" .= lbaFirst p
     , "sectorCount" .= sectors p
-    -- TODO: how much data am I losing here?
-    , "bootable" .= bootable p
+    -- TODO: this is kind of ugly, and it ignores the
+    --   ones that are bootable (bit 7 set) but not 0x80.
+    , "bootable" .= if status p `elem` [0x80, 0x00]
+        then toJSON $ bootable p
+        else toJSON $ status p
     -- TODO: give the type of the partition, if we know it.
     , "partitionType" .= partitionType p ]
 
