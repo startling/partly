@@ -81,9 +81,9 @@ jsonBootRecord :: Value -> Parser BootRecord
 jsonBootRecord (Object v) = do
   sig <- v .:? "bootSignature" <&> maybe 0xaa55 (if' 0xaa55 0)
   ptt <- v .: "partitions" >>= parseJSON
-  return $ BootRecord emptyBootloader ptt sig
+  btl <- v .: "bootloader" <&> maybe emptyBootloader Base64.decodeLenient
+  return $ BootRecord btl ptt sig
   where
     (<&>) = flip fmap
     if' x y b = if b then x else y
--- TODO: allow base64-encoded bootloaders
 -- TODO: allow filepaths for bootloaders  
