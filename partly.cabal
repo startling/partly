@@ -13,6 +13,8 @@ Library
     , binary
 Executable partly
   main-is: partly.hs
+  other-modules:
+      Partly.View
   build-depends:
       base
     , optparse-applicative
