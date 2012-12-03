@@ -72,20 +72,20 @@ instance FromJSON PartitionTable where
     <*> getNth 3
     where getNth = maybe (pure nullPartition) parseJSON . (!?) a
 
+instance FromJSON BootRecord where
+  parseJSON (Object v) = do
+    sig <- v .:? "bootSignature" <&> maybe 0xaa55 (if' 0xaa55 0)
+    ptt <- v .: "partitions" >>= parseJSON
+    btl <- v .: "bootloader" <&> maybe emptyBootloader Base64.decodeLenient
+    return $ BootRecord btl ptt sig
+    where
+      (<&>) = flip fmap
+      if' x y b = if b then x else y
+
 -- | The empty bootloader -- 446 empty bytes.
 emptyBootloader :: B.ByteString
 emptyBootloader = B.replicate 446 0
 
--- | Get a boot record out of JSON.
-jsonBootRecord :: Value -> Parser BootRecord
-jsonBootRecord (Object v) = do
-  sig <- v .:? "bootSignature" <&> maybe 0xaa55 (if' 0xaa55 0)
-  ptt <- v .: "partitions" >>= parseJSON
-  btl <- v .: "bootloader" <&> maybe emptyBootloader Base64.decodeLenient
-  return $ BootRecord btl ptt sig
-  where
-    (<&>) = flip fmap
-    if' x y b = if b then x else y
 -- TODO: allow filepaths for bootloaders?
 -- TODO: ToJSON instances should use numbers for bootSignature and status
 --   when they're nonstandard; FromJSON instances should respect these.
