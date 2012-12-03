@@ -6,6 +6,8 @@ import Data.Bits
 import Data.Maybe
 import Data.Word
 import Text.Printf
+-- vector:
+import Data.Vector ((!?))
 -- aeson:
 import Data.Aeson
 -- partly:
@@ -49,3 +51,11 @@ instance FromJSON PartitionEntry where
     <*>  v .: "lbaFirst"
     <*>  v .: "sectorCount"
     where (<&>) = flip fmap
+
+instance FromJSON PartitionTable where
+  parseJSON (Array a) = PartitionTable
+    <$> getNth 0
+    <*> getNth 1
+    <*> getNth 2
+    <*> getNth 3
+    where getNth = maybe (pure nullPartition) parseJSON . (!?) a
