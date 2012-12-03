@@ -81,6 +81,10 @@ instance Binary PartitionEntry where
     , put . partitionType, put . chsLast
     , putWord32le . lbaFirst, putWord32le . sectors]
 
+-- | The empty partition table entry.
+nullPartition :: PartitionEntry
+nullPartition = PartitionEntry 0 (CHS 0 0 0) 0 (CHS 0 0 0) 0 0
+
 -- | Whether this partition entry is marked bootable.
 bootable :: PartitionEntry -> Bool
 bootable = ((== 1) . (`shiftR` 7)) . status
