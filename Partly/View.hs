@@ -34,7 +34,7 @@ viewJsonOptions = ViewJsonOptions
       & short 'o'
       & help "A file to write to; defaults to stdout."
       & metavar "file" )
-  <*> strOption
+  <*> argument str
       ( help "The file to parse and inspect."
       & metavar "input" )
   where
@@ -43,7 +43,7 @@ viewJsonOptions = ViewJsonOptions
 
 viewJson :: ViewJsonOptions -> IO ()
 viewJson (ViewJsonOptions u o i) = do
-  mbr <- runGet (get :: Get BootRecord) <$> L.readFile i
+  mbr <- runGet (get b:: Get BootRecord) <$> L.readFile i
   writer $ encoder mbr
   where
     encoder = if u then encode else encodePretty
