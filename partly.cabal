@@ -21,4 +21,5 @@ Executable partly
     , aeson
     , aeson-pretty
     , vector
+    , base64-bytestring
     , optparse-applicative

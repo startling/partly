@@ -13,6 +13,8 @@ import Data.Vector ((!?))
 -- aeson:
 import Data.Aeson
 import Data.Aeson.Types
+-- base64-bytestring:
+import qualified Data.ByteString.Base64 as Base64
 -- partly:
 import System.Disk.Partitions.MBR
 
@@ -40,6 +42,13 @@ instance ToJSON BootRecord where
   toJSON b = object
     [ "bootSignature" .= (bootSig b == 0xaa55)
     , "partitions" .= partitions b ]
+
+-- | Write a boot record to JSON with the bootloader base64-encoded.
+bootrecordWithBootloader :: BootRecord -> Value
+bootrecordWithBootloader b = object
+  [ "bootSignature" .= (bootSig b == 0xaa55)
+  , "partitions" .= partitions b
+  , "bootloader" .= Base64.encode (bootloader b) ]
 
 instance FromJSON CHS where
   parseJSON (Object v) = CHS
