@@ -18,9 +18,9 @@ import System.Disk.Partitions.MBR
 import Partly.Json
 
 data ViewJsonOptions = ViewJsonOptions
-  { uglify :: Bool
-  , output :: Maybe FilePath
-  , input  :: FilePath }
+  { uglify  :: Bool
+  , output  :: Maybe FilePath
+  , input   :: FilePath }
   deriving (Eq, Show)
 
 viewJsonOptions :: Parser ViewJsonOptions
@@ -64,3 +64,6 @@ viewParser = info
 
 view :: ViewCommand -> IO ()
 view c = case c of ViewJson vj -> viewJson vj;
+
+-- TODO: have a flag to include the base64-encoded bootloader in the JSON
+--  complications: Data.Aeson.Pretty only lets me use ToJSON.
