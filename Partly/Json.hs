@@ -23,10 +23,8 @@ instance ToJSON PartitionEntry where
     , "chsLast" .= chsLast p
     , "lbaFirst" .= lbaFirst p
     , "sectorCount" .= sectors p
-    , "status" .= object
-      [ "bootable" .= bootable p
-      , "asNum" .= status p
-      , "asHex" .= (printf "0x%02x" (status p) :: String) ]
+    -- TODO: how much data am I losing here?
+    , "bootable" .= bootable p
     , "partitionType" .= object
       [ "asNum" .= partitionType p ]]
       -- TODO: print the type of partition
