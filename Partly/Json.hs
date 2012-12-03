@@ -45,33 +45,10 @@ instance FromJSON CHS where
 
 instance FromJSON PartitionEntry where
   parseJSON (Object v) = PartitionEntry
-    <$> (v .: "status" >>= getStatus)
+    <$> (v .: "status" <&> \x -> if x then 0x80 else 0x00)
     <*> (v .: "chsFirst" >>= parseJSON)
     <*> (v .: "partitionType" >>= (.: "asNum"))
     <*> (v .: "chsLast" >>= parseJSON)
     <*>  v .: "lbaFirst"
     <*>  v .: "sectorCount"
-    where
-      -- Check that "status" is consistent.
-      getStatus (Object v) = do
-        asNum <- v .:? "asNum"
-        chars <- v .:? "asHex"
-        final <- case (asNum, chars) of
-          (Nothing, Nothing) -> pure Nothing
-          (Nothing, Just s) -> pure (readMaybe s)
-          (Just x, Nothing) -> pure (Just x)
-          (Just x, Just s) -> if readMaybe s == Just x
-            then pure (Just x) else empty
-        boots <- v .:? "bootable"
-        case (boots, final) of
-          (Just False, Nothing) -> pure 0x00
-          (Just True, Nothing) -> pure 0x80 
-          (Just False, Just v) -> if v `shiftR` 7 == 1
-            then empty else pure v
-          (Just True, Just v) -> if v `shiftR` 7 == 1
-            then pure v else empty
-          (Nothing, Nothing) -> pure 0x80
-          (Nothing, Just v) -> pure v
-      -- Read a value, if possible.
-      readMaybe :: Read a => String -> Maybe a
-      readMaybe x = case reads x of [(v, "")] -> Just v; _ -> Nothing;
+    where (<&>) = flip fmap
