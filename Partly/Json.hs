@@ -6,10 +6,13 @@ import Data.Bits
 import Data.Maybe
 import Data.Word
 import Text.Printf
+-- bytestring:
+import qualified Data.ByteString as B
 -- vector:
 import Data.Vector ((!?))
 -- aeson:
 import Data.Aeson
+import Data.Aeson.Types
 -- partly:
 import System.Disk.Partitions.MBR
 
@@ -59,3 +62,19 @@ instance FromJSON PartitionTable where
     <*> getNth 2
     <*> getNth 3
     where getNth = maybe (pure nullPartition) parseJSON . (!?) a
+
+-- | The empty bootloader -- 446 empty bytes.
+emptyBootloader :: B.ByteString
+emptyBootloader = B.replicate 446 0
+
+-- | Get a boot record out of JSON.
+jsonBootRecord :: Value -> Parser BootRecord
+jsonBootRecord (Object v) = do
+  sig <- v .:? "bootSignature" <&> maybe 0xaa55 (if' 0xaa55 0)
+  ptt <- v .: "partitions" >>= parseJSON
+  return $ BootRecord emptyBootloader ptt sig
+  where
+    (<&>) = flip fmap
+    if' x y b = if b then x else y
+-- TODO: allow base64-encoded bootloaders
+-- TODO: allow filepaths for bootloaders  
