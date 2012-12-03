@@ -86,4 +86,4 @@ jsonBootRecord (Object v) = do
   where
     (<&>) = flip fmap
     if' x y b = if b then x else y
--- TODO: allow filepaths for bootloaders  
+-- TODO: allow filepaths for bootloaders?  
