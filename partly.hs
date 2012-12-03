@@ -55,15 +55,6 @@ viewOptions = ViewBootRecord
       ( help "The file to parse and view."
       & metavar "file" )
 
-viewCommand :: Mod CommandFields ViewBootRecord
-viewCommand = command "view" $ ParserInfo
-  { infoParser      = viewOptions
-  , infoFullDesc    = False
-  , infoProgDesc    = "View the contents of an MBR."
-  , infoHeader      = ""
-  , infoFooter      = ""
-  , infoFailureCode = 1 }
-
 view :: ViewBootRecord -> IO ()
 view (ViewBootRecord sec sig (ViewPartitionTable _1 _2 _3 _4) f) = do
   l <- L.readFile f
@@ -76,10 +67,20 @@ view (ViewBootRecord sec sig (ViewPartitionTable _1 _2 _3 _4) f) = do
   when (_1 || _2 || _3 || _4) . putStrLn $
     printf "some partitions"
 
-master :: ParserInfo ViewBootRecord
-master = info (subparser viewCommand)
-  ( fullDesc
-  & progDesc "View, create, or alter a DOS-style master boot record.")
+data Command
+  = View ViewBootRecord
+  deriving (Eq, Show)
+
+master :: ParserInfo Command
+master = info
+  ( subparser
+    ( command "view"
+      ( info (View <$> viewOptions)
+        ( progDesc "View the contents of an MBR." ))))
+   ( progDesc "Inspect, create, or alter DOS-style master boot records." )
 
 main :: IO ()
-main = execParser master >>= view
+main = execParser master >>= apply
+  where
+    apply c = case c of
+      View v -> view v
