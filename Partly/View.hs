@@ -43,7 +43,7 @@ viewJsonOptions = ViewJsonOptions
 
 viewJson :: ViewJsonOptions -> IO ()
 viewJson (ViewJsonOptions u o i) = do
-  mbr <- runGet (get b:: Get BootRecord) <$> L.readFile i
+  mbr <- runGet (get :: Get BootRecord) <$> L.readFile i
   writer $ encoder mbr
   where
     encoder = if u then encode else encodePretty
