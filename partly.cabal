@@ -20,4 +20,5 @@ Executable partly
       base
     , aeson
     , aeson-pretty
+    , vector
     , optparse-applicative
