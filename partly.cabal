@@ -15,6 +15,7 @@ Executable partly
   main-is: partly.hs
   other-modules:
       Partly.View
+    , Partly.Json
   build-depends:
       base
     , optparse-applicative
