@@ -17,20 +17,15 @@ import Options.Applicative
 import System.Disk.Partitions.MBR
 import Partly.Json
 
-data ViewBootRecord = ViewBootRecord
-  { asJson :: Bool
-  , uglify :: Bool
+data ViewJsonOptions = ViewJsonOptions
+  { uglify :: Bool
   , input  :: Maybe FilePath
   , output :: Maybe FilePath }
   deriving (Eq, Show)
 
-viewOptions :: Parser ViewBootRecord
-viewOptions = ViewBootRecord
+viewJsonOptions :: Parser ViewJsonOptions
+viewJsonOptions = ViewJsonOptions
   <$> switch
-      ( long "json"
-      & short 'j'
-      & help "Show the boot record as JSON." )
-  <*> switch
       ( long "ugly"
       & short 'u'
       & help "Don't prettify the JSON before writing it." )
@@ -40,23 +35,33 @@ viewOptions = ViewBootRecord
       & value Nothing )
   <*> maybeOption
       ( long "output"
-      & value Nothing
       & short 'o'
       & help "A file to write to."
       & metavar "file" )
   where
     maybeOption :: Mod OptionFields (Maybe String) -> Parser (Maybe String)
-    maybeOption m = nullOption $ reader (Just . Just) & m
+    maybeOption m = nullOption $ reader (Just . Just) & m & value Nothing
 
-view :: ViewBootRecord -> IO ()
-view (ViewBootRecord j u i o) = do
+viewJson :: ViewJsonOptions -> IO ()
+viewJson (ViewJsonOptions u i o) = do
   mbr <- runGet (get :: Get BootRecord) <$> maybe L.getContents L.readFile i
-  let json = encoder mbr in case (j, o) of
-    (False, Nothing) -> print mbr
-    (False, Just f) -> writeFile f $ show mbr
-    (True, Nothing) -> L.putStr json
-    (True, Just f) -> L.writeFile f json
+  writer $ encoder mbr
   where
-    encoder :: ToJSON j => j -> L.ByteString
     encoder = if u then encode else encodePretty
+    writer = maybe L.putStr L.writeFile o
 
+data ViewCommand
+  = ViewJson ViewJsonOptions
+  deriving (Eq, Show)
+
+viewParser :: ParserInfo ViewCommand
+viewParser = info
+  ( subparser
+    ( command "json"
+      ( info (ViewJson <$> viewJsonOptions )
+        ( progDesc "Read a boot record into JSON." ))))
+  ( progDesc "Inspect a boot record."
+  & fullDesc )
+
+view :: ViewCommand -> IO ()
+view c = case c of ViewJson vj -> viewJson vj;

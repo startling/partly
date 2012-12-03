@@ -7,16 +7,14 @@ import Options.Applicative
 import Partly.View
 
 data Command
-  = View ViewBootRecord
+  = View ViewCommand
   deriving (Eq, Show)
 
 parser :: ParserInfo Command
 parser = info
   ( subparser
-    ( command "view"
-      ( info (View <$> viewOptions)
-        ( progDesc "View the contents of an MBR." ))))
-   ( progDesc "Inspect, create, or alter DOS-style master boot records." )
+    ( command "view" $ View <$> viewParser ))
+  ( progDesc "Inspect, create, or alter DOS-style master boot records." )
 
 main :: IO ()
 main = execParser parser >>= apply
