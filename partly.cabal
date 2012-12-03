@@ -18,4 +18,5 @@ Executable partly
     , Partly.Json
   build-depends:
       base
+    , aeson
     , optparse-applicative
