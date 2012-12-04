@@ -61,7 +61,7 @@ instance FromJSON CHS where
 
 instance FromJSON PartitionEntry where
   parseJSON (Object v) = PartitionEntry
-    <$> (v .: "status" >>= \x -> case x of
+    <$> (v .: "bootable" >>= \x -> case x of
         (Bool b) -> return $ if b then 0x80 else 0x00
         (Number n) -> parseJSON $ Number n)
     <*> (v .: "chsFirst" >>= parseJSON)
