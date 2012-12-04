@@ -38,5 +38,5 @@ main = do
     [ testIso "CHS" (encode :: CHS -> L.ByteString)
     , testIso "PartitionEntry" (encode :: PartitionEntry -> L.ByteString)
     , testIso "PartitionTable" (encode :: PartitionTable -> L.ByteString)
-    , testIso "BootRecord" (encode :: BootRecord -> L.ByteString) ]
+    , testIso "BootRecord" (encode . bootRecordToJson True) ]
   unless is exitFailure
