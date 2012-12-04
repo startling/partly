@@ -48,7 +48,10 @@ instance ToJSON BootRecord where
 -- base64-encoded bootloader.
 bootRecordToJson :: Bool -> BootRecord -> Value
 bootRecordToJson i b = object $
-  [ "bootSignature" .= (bootSig b == 0xaa55)
+  -- TODO: this is kind of ugly.
+  [ "bootSignature" .= if bootSig b `elem` [0, 0xaa5]
+      then toJSON $ bootSig b == 0xaa55
+      else toJSON $ bootSig b
   , "partitions" .= partitions b ]
   ++ if i then [ "bootloader" .= Base64.encode (bootloader b) ] else []
 
