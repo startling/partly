@@ -49,7 +49,7 @@ instance ToJSON BootRecord where
 bootRecordToJson :: Bool -> BootRecord -> Value
 bootRecordToJson i b = object $
   -- TODO: this is kind of ugly.
-  [ "bootSignature" .= if bootSig b `elem` [0, 0xaa5]
+  [ "bootSignature" .= if bootSig b `elem` [0, 0xaa55]
       then toJSON $ bootSig b == 0xaa55
       else toJSON $ bootSig b
   , "partitions" .= partitions b ]
