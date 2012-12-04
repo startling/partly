@@ -130,7 +130,6 @@ emptyBootloader = B.replicate 446 0
 -- | The empty boot record.
 nullBootRecord :: BootRecord
 nullBootRecord = BootRecord emptyBootloader nullPartitionTable 0xaa55
--- TODO: should this have the correct boot signature?
 
 -- | Get the completely-optional, obsolete disk timestamp used by some old
 -- versions of Windows.

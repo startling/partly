@@ -91,7 +91,3 @@ instance FromJSON BootRecord where
     where
       (<&>) = flip fmap
       if' x y b = if b then x else y
-
--- TODO: allow filepaths for bootloaders?
--- TODO: ToJSON instances should use numbers for bootSignature and status
---   when they're nonstandard; FromJSON instances should respect these.
