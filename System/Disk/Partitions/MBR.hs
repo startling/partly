@@ -123,6 +123,15 @@ instance Binary BootRecord where
   put = (sequence_ .) . sequence $ [ putByteString . B.take 446 . bootloader
     , put . partitions , putWord16le . bootSig ]
 
+-- | The empty bootloader -- 446 empty bytes.
+emptyBootloader :: B.ByteString
+emptyBootloader = B.replicate 446 0
+
+-- | The empty boot record.
+nullBootRecord :: BootRecord
+nullBootRecord = BootRecord emptyBootloader nullPartitionTable 0xaa55
+-- TODO: should this have the correct boot signature?
+
 -- | Get the completely-optional, obsolete disk timestamp used by some old
 -- versions of Windows.
 getTimestamp :: BootRecord -> Maybe Timestamp

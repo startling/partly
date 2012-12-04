@@ -92,10 +92,6 @@ instance FromJSON BootRecord where
       (<&>) = flip fmap
       if' x y b = if b then x else y
 
--- | The empty bootloader -- 446 empty bytes.
-emptyBootloader :: B.ByteString
-emptyBootloader = B.replicate 446 0
-
 -- TODO: allow filepaths for bootloaders?
 -- TODO: ToJSON instances should use numbers for bootSignature and status
 --   when they're nonstandard; FromJSON instances should respect these.
