@@ -29,3 +29,12 @@ Test-Suite test-partly-lib
   main-is: test-lib.hs
   build-depends:
       QuickCheck
+Test-Suite test-partly-json
+  type: exitcode-stdio-1.0
+  main-is: test-json.hs
+  other-modules:
+      Partly.Json
+    , System.Disk.Partitions.MBR.Gen
+  build-depends:
+      aeson
+    , QuickCheck
