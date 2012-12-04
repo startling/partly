@@ -3,13 +3,14 @@ module Partly.Make where
 import Data.Word
 import Control.Applicative
 -- bytestring:
-import Data.ByteString (pack)
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 -- binary:
-import Data.Binary (put)
+import Data.Binary (put, get)
+import Data.Binary.Get
 import Data.Binary.Put
 -- aeson:
-import Data.Aeson
+import Data.Aeson.Encode.Pretty
 -- optparse-applicative:
 import Options.Applicative
 -- partly:
@@ -56,4 +57,14 @@ makeParser = info makeOptions
   & fullDesc)
 
 make :: MakeOptions -> IO ()
-make m = return ()
+make m = do
+  -- TODO: treat this a json if it ends in .json.
+  base <- maybe (return nullBootRecord)
+    (fmap (runGet get) . L.readFile) $ from m
+  new <- case btl m of
+    Nothing -> return base
+    Just n -> (`fmap` B.readFile n) $ \x -> base { bootloader = x }
+  let l = if json m then encodePretty new
+       else runPut $ put new
+  maybe (L.putStr l) (flip L.writeFile l) $ output m
+  return ()
