@@ -24,3 +24,7 @@ Executable partly
     , vector
     , base64-bytestring
     , optparse-applicative
+Test-Suite test-partly-lib
+  main-is: test-lib.hs
+  other-modules:
+      
