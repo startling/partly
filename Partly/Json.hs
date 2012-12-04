@@ -86,7 +86,7 @@ instance FromJSON BootRecord where
       (Just (Bool False)) -> pure 0xaa55
       (Just n) -> parseJSON n
     ptt <- v .: "partitions" >>= parseJSON
-    btl <- v .: "bootloader" <&> maybe emptyBootloader Base64.decodeLenient
+    btl <- v .:? "bootloader" <&> maybe emptyBootloader Base64.decodeLenient
     return $ BootRecord btl ptt sig
     where
       (<&>) = flip fmap
