@@ -1,12 +1,13 @@
 module System.Disk.Partitions.MBR.Gen where
 -- base
 import Control.Applicative
--- bytestring:
+-- bytestring
 import qualified Data.ByteString as B
 -- QuickCheck
 import Test.QuickCheck
 -- partly
 import System.Disk.Partitions.MBR
+import Partly.Json
 
 instance Arbitrary CHS where
   arbitrary = CHS <$> arbitrary <*> _6bit <*> _10bit
