@@ -3,6 +3,8 @@ module Main where
 import Control.Applicative
 import Control.Monad
 import System.Exit
+-- bytestring:
+import qualified Data.ByteString.Lazy as L
 -- binary:
 import Data.Binary
 import Data.Binary.Put
@@ -12,7 +14,38 @@ import Test.QuickCheck
 import Test.QuickCheck.Test
 -- partly:
 import System.Disk.Partitions.MBR
-import System.Disk.Partitions.MBR.Test
+
+-- | Generate a random lazy ByteString of some N bytes.
+genBytes :: Int -> Gen L.ByteString
+genBytes = fmap L.pack . flip vectorOf arbitrary
+
+-- | Test whether a Get succeeds for any bytestring of some n bytes.
+succeeds :: Int -> Get a -> Gen Bool
+succeeds n get = isRight . runGetOrFail get <$> genBytes n
+  where isRight (Right _) = True; isRight _ = False;
+
+-- | Test whether a getter and a putter are the exact inverses for
+-- bytestrings of some length.
+bijective :: Int -> Get b -> (b -> Put) -> Gen Bool
+bijective n get put = (`fmap` genBytes n) $ \bs ->
+  bs == (runPut . put . runGet get $ bs)
+
+testSuccess :: String -> Int -> Get t -> IO Bool
+testSuccess s i g = do
+  putStrLn $ "--> " ++ s
+  r <- quickCheckResult $ succeeds i g 
+  return $ resultToBool r
+
+testBijective :: String -> Int -> Get b -> (b -> Put) -> IO Bool
+testBijective s i g p = do
+  putStrLn $ "--> " ++ s
+  r <- quickCheckResult $ bijective i g p
+  return $ resultToBool r
+           
+resultToBool :: Result -> Bool
+resultToBool (Success _ _ _) = True
+resultToBool (GaveUp _ _ _) = False
+resultToBool (Failure _ _ _ _ _ _ _) = False
 
 main :: IO ()
 main = do
@@ -31,20 +64,3 @@ main = do
     , testBijective "BootRecord" 512 (get :: Get BootRecord) put ]
   unless (ss && bs) exitFailure
   return ()
-
-testSuccess :: String -> Int -> Get t -> IO Bool
-testSuccess s i g = do
-  putStrLn $ "--> " ++ s
-  r <- quickCheckResult $ succeeds i g 
-  return $ resultToBool r
-
-testBijective :: String -> Int -> Get b -> (b -> Put) -> IO Bool
-testBijective s i g p = do
-  putStrLn $ "--> " ++ s
-  r <- quickCheckResult $ bijective i g p
-  return $ resultToBool r
-           
-resultToBool :: Result -> Bool
-resultToBool (Success _ _ _) = True
-resultToBool (GaveUp _ _ _) = False
-resultToBool (Failure _ _ _ _ _ _ _) = False
