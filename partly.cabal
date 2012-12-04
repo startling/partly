@@ -30,3 +30,5 @@ Test-Suite test-partly-lib
   other-modules:
       System.Disk.Partitions.MBR.Test
     , System.Disk.Partitions.MBR.Gen
+  build-depends:
+      QuickCheck
