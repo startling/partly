@@ -99,6 +99,11 @@ instance Binary PartitionTable where
   put = (sequence_ .) . sequence $ [put . first, put . second
     , put . third, put . fourth]
 
+-- | The empty partition table.
+nullPartitionTable :: PartitionTable
+nullPartitionTable = PartitionTable n n n n
+  where n = nullPartition
+
 -- | The structure of a Master Boot Record is as follows...
 data BootRecord = BootRecord
   -- | The first piece of data on a disk with a Master Boot Record is some
