@@ -57,7 +57,7 @@ bootRecordToJson i b = object $
 
 instance FromJSON CHS where
   parseJSON (Object v) = CHS
-    <$> v .: "head" <*> v .: "cylinder" <*> v .: "sector"
+    <$> v .: "head" <*> v .: "sector" <*> v .: "cylinder"
 
 instance FromJSON PartitionEntry where
   parseJSON (Object v) = PartitionEntry
