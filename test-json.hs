@@ -24,7 +24,7 @@ testIso :: (Eq a, Show a, FromJSON a, Arbitrary a)
 testIso s e = do
   putStrLn $ "--> " ++ s
   r <- quickCheckResult $ iso e
-  return True
+  return $ resultToBool r
 
 resultToBool :: Result -> Bool
 resultToBool (Success _ _ _) = True
