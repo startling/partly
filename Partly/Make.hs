@@ -1,5 +1,6 @@
 module Partly.Make where
 -- base:
+import Data.List
 import Data.Word
 import Control.Applicative
 -- bytestring:
@@ -10,7 +11,9 @@ import Data.Binary (put, get)
 import Data.Binary.Get
 import Data.Binary.Put
 -- aeson:
-import Data.Aeson (encode)
+import Data.Aeson (encode, decode)
+import Data.Aeson (fromJSON, Value)
+import Data.Aeson.Types (parseEither, Result)
 import Data.Aeson.Encode.Pretty
 -- optparse-applicative:
 import Options.Applicative
@@ -64,9 +67,11 @@ makeParser = info makeOptions
 
 make :: MakeOptions -> IO ()
 make m = do
-  -- TODO: treat this a json if it ends in .json.
-  base <- maybe (return nullBootRecord)
-    (fmap (runGet get) . L.readFile) $ from m
+  base <- case from m of
+    Nothing -> return nullBootRecord
+    (Just f) -> case ".json" `elem` tails f of
+       True -> L.readFile f >>= decodeJson
+       False -> fmap (runGet get) $ L.readFile f
   new <- case btl m of
     Nothing -> return base
     Just n -> (`fmap` B.readFile n) $ \x -> base { bootloader = x }
@@ -74,6 +79,7 @@ make m = do
   maybe (L.putStr l) (flip L.writeFile l) $ output m
   return ()
   where
+    decodeJson = maybe (fail "problems reading JSON") return . decode
     getter = case (json m, ugly m) of
       (False, _) -> runPut . put
       (True, True) -> encode
