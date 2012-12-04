@@ -10,6 +10,7 @@ import Data.Binary (put, get)
 import Data.Binary.Get
 import Data.Binary.Put
 -- aeson:
+import Data.Aeson (encode)
 import Data.Aeson.Encode.Pretty
 -- optparse-applicative:
 import Options.Applicative
@@ -21,6 +22,7 @@ data MakeOptions = MakeOptions
   { from   :: Maybe FilePath
   , btl    :: Maybe FilePath
   , json   :: Bool
+  , ugly   :: Bool
   , output :: Maybe FilePath }
   deriving (Eq, Show)
 
@@ -40,7 +42,11 @@ makeOptions = MakeOptions
     ( long "json"
     & short 'j'
     & help "Output the MBR as JSON rather than a binary blob." )
- <*> maybeOption
+  <*> switch
+    ( long "ugly"
+    & short 'u'
+    & help "Don't prettify the JSON before writing it." )
+  <*> maybeOption
     ( long "output"
     & short 'o'
     & metavar "file"
@@ -64,7 +70,11 @@ make m = do
   new <- case btl m of
     Nothing -> return base
     Just n -> (`fmap` B.readFile n) $ \x -> base { bootloader = x }
-  let l = if json m then encodePretty new
-       else runPut $ put new
+  let l = getter new
   maybe (L.putStr l) (flip L.writeFile l) $ output m
   return ()
+  where
+    getter = case (json m, ugly m) of
+      (False, _) -> runPut . put
+      (True, True) -> encode
+      (True, False) -> encodePretty
