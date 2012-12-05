@@ -7,55 +7,26 @@ import qualified Data.ByteString.Lazy as L
 -- binary:
 import Data.Binary (get)
 import Data.Binary.Get
--- aeson:
-import Data.Aeson
--- aeson-pretty:
-import Data.Aeson.Encode.Pretty
 -- optparse-applicative:
 import Options.Applicative
 -- partly:
 import System.Disk.Partitions.MBR
 import Partly.Json
+import Partly.Common
 
-data ViewJsonOptions = ViewJsonOptions
-  { uglify    :: Bool
-  , includeBL :: Bool
-  , output    :: Maybe FilePath
-  , input     :: FilePath }
-  deriving (Eq, Show)
+viewJsonOptions :: Parser (JsonOptions, Input, Output)
+viewJsonOptions = (,,)
+  <$> parseJsonOptions
+  <*> parseInput "The file to parse and inspect."
+  <*> parseOutput
 
-viewJsonOptions :: Parser ViewJsonOptions
-viewJsonOptions = ViewJsonOptions
-  <$> switch
-      ( long "ugly"
-      & short 'u'
-      & help "Don't prettify the JSON before writing it." )
-  <*> switch
-      ( long "include-bootloader"
-      & short 'l'
-      & help "Include the bootloader, base64-encoded." )
-  <*> maybeOption
-      ( long "output"
-      & short 'o'
-      & help "A file to write to; defaults to stdout."
-      & metavar "file" )
-  <*> argument str
-      ( help "The file to parse and inspect."
-      & metavar "input" )
-  where
-    maybeOption :: Mod OptionFields (Maybe String) -> Parser (Maybe String)
-    maybeOption m = nullOption $ reader (Just . Just) & m & value Nothing
-
-viewJson :: ViewJsonOptions -> IO ()
-viewJson (ViewJsonOptions u b o i) = do
-  mbr <- runGet (get :: Get BootRecord) <$> L.readFile i
-  writer . encoder . bootRecordToJson b $ mbr
-  where
-    encoder = if u then encode else encodePretty
-    writer = maybe L.putStr L.writeFile o
+viewJson :: (JsonOptions, Input, Output) -> IO ()
+viewJson (j, i, o) = do
+  mbr <- runGet (get :: Get BootRecord) <$> input i
+  output o . displayJson j $ mbr
 
 data ViewCommand
-  = ViewJson ViewJsonOptions
+  = ViewJson (JsonOptions, Input, Output)
   deriving (Eq, Show)
 
 viewParser :: ParserInfo ViewCommand
@@ -69,4 +40,3 @@ viewParser = info
 
 view :: ViewCommand -> IO ()
 view c = case c of ViewJson vj -> viewJson vj;
-
