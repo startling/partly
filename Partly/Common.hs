@@ -40,7 +40,7 @@ parseJsonOptions = JsonOptions
     & short 'u'
     & help "Don't prettify the JSON before writing it." )
   <*> switch
-    ( long "include-bootloader"
+    ( long "with-bootloader"
     & short 'l'
     & help "Include the bootloader, base64-encoded." )
 
