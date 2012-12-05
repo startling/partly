@@ -2,8 +2,6 @@ module Partly.View where
 -- base:
 import Control.Applicative
 import Text.Printf
--- bytestring:
-import qualified Data.ByteString as B
 -- optparse-applicative:
 import Options.Applicative
 -- partly:
@@ -11,11 +9,13 @@ import System.Disk.Partitions.MBR
 import Partly.Json
 import Partly.Common
 
+-- | Parse the options we can use for "partly view json".
 viewJsonOptions :: Parser (Input, Display)
 viewJsonOptions = (,)
   <$> parseInput "The file to parse and inspect."
   <*> parseDisplay
 
+-- | Turn those options into an IO action.
 viewJson :: (Input, Display) -> IO ()
 viewJson (i, d) = input i >>= display d
 
@@ -27,10 +27,12 @@ fieldCommand s fn m = command s . flip info m $
     <$> parseInput "The file to parse and inspect."
     <*> ((. fn) <$> output <$> parseOutput)
 
+-- | The type that the main program will hand to us.
 data ViewCommand
   = ViewJson (Input, Display)
   | ViewField Input (BootRecord -> IO ())
 
+-- | Combine all the commands together.
 viewParser :: ParserInfo ViewCommand
 viewParser = info
   ( subparser
@@ -45,6 +47,7 @@ viewParser = info
   ( progDesc "Inspect a boot record."
   & fullDesc )
 
+-- | Execute the "view" command.
 view :: ViewCommand -> IO ()
 view c = case c of
   ViewJson vj -> viewJson vj
