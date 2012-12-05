@@ -62,3 +62,20 @@ output :: Output -> Either String L.ByteString -> IO ()
 output = maybe (putStrLn <|> L.putStr)
   (\p -> writeFile p <|> L.writeFile p) . outFile 
   where (f <|> _) (Left a) = f a; (_ <|> f) (Right b) = f b
+
+-- | Some options related to how we get input.
+data Input = Input
+  { inFile :: FilePath }
+  deriving (Eq, Show)
+
+-- | Parse those input options, given a string to use for
+-- the description of the the input file.
+parseInput :: String -> Parser Input
+parseInput s = Input
+  <$> argument str
+    ( help s
+    & metavar "file" )
+
+-- | Get a lazy bytestring as input.
+input :: Input -> IO L.ByteString
+input = L.readFile . inFile
