@@ -1,13 +1,14 @@
 module Partly.Common where
 -- base:
 import Control.Applicative
+import Data.List
 -- bytestring:
 import qualified Data.ByteString.Lazy as L
 -- binary:
 import Data.Binary (get)
 import Data.Binary.Get
 -- aeson:
-import Data.Aeson (Value, encode)
+import Data.Aeson (Value, encode, decode)
 import Data.Aeson.Encode.Pretty (encodePretty)
 -- optparse-applicative:
 import Options.Applicative
@@ -66,7 +67,10 @@ output = maybe L.putStr L.writeFile . outFile
 
 -- | Some options related to how we get input.
 data Input = Input
-  { inFile :: FilePath }
+  { inFile   :: FilePath
+  -- | Whether this should be read as JSON; 'Nothing' here means to infer
+  -- from the extension type.
+  , fromJson :: Maybe Bool }
   deriving (Eq, Show)
 
 -- | Parse those input options, given a string to use for
@@ -76,7 +80,16 @@ parseInput s = Input
   <$> argument str
     ( help s
     & metavar "file" )
+  <*> flag Nothing (Just True)
+    ( long "from-json"
+    & short 'f'
+    & help "Treat the input file as JSON." )
 
 -- | Get a BootRecord as input.
 input :: Input -> IO BootRecord
-input = fmap (runGet (get :: Get BootRecord)) . L.readFile . inFile
+input i = reader <$> L.readFile (inFile i)
+  where
+    isJson = maybe (".json" `elem` tails (inFile i)) id $ fromJson i
+    reader = if isJson then
+      maybe (error "Problems reading JSON") id . decode else
+      runGet (get :: Get BootRecord)

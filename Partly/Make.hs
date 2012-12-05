@@ -84,9 +84,8 @@ make :: MakeOptions -> IO ()
 make m = do
   base <- case from m of
     Nothing -> return nullBootRecord
-    (Just f) -> input (Input f)
+    (Just f) -> input (Input f Nothing)
   new <- writer <$> applyDelta (change m) base
   output (outOpts m) new
   where
-    decodeJson = maybe (fail "problems reading JSON") return . decode
     writer = if asJson m then displayJson $ jsonOpts m else runPut . put
