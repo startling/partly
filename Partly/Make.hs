@@ -82,9 +82,8 @@ applyDelta d b = do
 
 make :: MakeOptions -> IO ()
 make m = do
-  base <- case from m of
-    Nothing -> return nullBootRecord
-    (Just f) -> input (Input f Nothing)
+  base <- maybe (return nullBootRecord)
+    (input . flip Input Nothing) $ from m
   new <- writer <$> applyDelta (change m) base
   output (outOpts m) new
   where
