@@ -50,20 +50,8 @@ displayJson o = encoder . change
     change = bootRecordToJson $ includeBootloader o
     encoder = if ugly o then encode else encodePretty
 
--- | Some options related to how we output things.
-data Output = Output
-  { outFile :: Maybe FilePath }
-  deriving (Eq, Show)
-
--- | Parse those options.
-parseOutput :: Parser Output
-parseOutput = Output
-  <$> maybeOption
-    ( long "output"
-    & short 'o'
-    & metavar "file"
-    & help "A file to write to; defaults to stdout." )
-
+-- | A class for things that can be conditionally written to
+-- the screen or to a file.
 class Outputs o where
   toFile :: FilePath -> o -> IO ()
   toScreen :: o -> IO ()
@@ -80,14 +68,22 @@ instance Outputs L.ByteString where
   toFile = L.writeFile
   toScreen = L.putStr
 
--- | Output a bytestring or a string, given some 'Output'.
-output :: Outputs o => Output -> o -> IO ()
-output = maybe toScreen toFile . outFile
+-- | Parse an optional output file path.
+parseOutput :: Parser (Maybe FilePath)
+parseOutput = maybeOption
+    ( long "output"
+    & short 'o'
+    & metavar "file"
+    & help "A file to write to; defaults to stdout." )
+
+-- | Output a bytestring or a string, given an optional filepath.
+output :: Outputs o => Maybe FilePath -> o -> IO ()
+output = maybe toScreen toFile
 
 -- | Some options for displaying a thing conditionally as JSON.
 data Display = Display
   { useJson :: Maybe JsonOptions
-  , outputs :: Output }
+  , outputs :: Maybe FilePath }
   deriving (Eq, Show)
 
 -- | Parse the options for displaying things.
