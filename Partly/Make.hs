@@ -1,21 +1,11 @@
 module Partly.Make where
 -- base:
-import Data.List
-import Data.Char
-import Data.Word
+import Data.List (tails)
+import Data.Char (toLower)
+import Data.Word (Word16)
 import Control.Applicative
 -- bytestring:
 import qualified Data.ByteString as B
-import qualified Data.ByteString.Lazy as L
--- binary:
-import Data.Binary (put, get)
-import Data.Binary.Get
-import Data.Binary.Put
--- aeson:
-import Data.Aeson (encode, decode)
-import Data.Aeson (fromJSON, Value)
-import Data.Aeson.Types (parseEither, Result)
-import Data.Aeson.Encode.Pretty
 -- optparse-applicative:
 import Options.Applicative
 -- partly:
