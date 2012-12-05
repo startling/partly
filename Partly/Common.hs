@@ -7,8 +7,9 @@ import Data.List
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 -- binary:
-import Data.Binary (get)
+import Data.Binary (get, put)
 import Data.Binary.Get
+import Data.Binary.Put
 -- aeson:
 import Data.Aeson (Value, encode, decode)
 import Data.Aeson.Encode.Pretty (encodePretty)
@@ -82,6 +83,29 @@ instance Outputs L.ByteString where
 -- | Output a bytestring or a string, given some 'Output'.
 output :: Outputs o => Output -> o -> IO ()
 output = maybe toScreen toFile . outFile
+
+-- | Some options for displaying a thing conditionally as JSON.
+data Display = Display
+  { useJson :: Maybe JsonOptions
+  , outputs :: Output }
+  deriving (Eq, Show)
+
+-- | Parse the options for displaying things.
+parseDisplay :: Parser Display
+parseDisplay = Display 
+  <$> optional (json *> parseJsonOptions)
+  <*> parseOutput
+  where
+    json :: Parser Bool
+    json = flag' True
+      ( long "json"
+      & short 'j'
+      & help "Output as JSON." )
+
+-- | Display a 'BootRecord', potentially as JSON.
+display :: Display -> BootRecord -> IO ()
+display d = output (outputs d) . fn 
+  where fn = maybe (runPut . put) displayJson $ useJson d
 
 -- | Some options related to how we get input.
 data Input = Input
