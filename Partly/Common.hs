@@ -58,10 +58,8 @@ parseOutput = Output
     & help "A file to write to; defaults to stdout." )
 
 -- | Output a bytestring or a string, given some 'Output'.
-output :: Output -> Either String L.ByteString -> IO ()
-output = maybe (putStrLn <|> L.putStr)
-  (\p -> writeFile p <|> L.writeFile p) . outFile 
-  where (f <|> _) (Left a) = f a; (_ <|> f) (Right b) = f b
+output :: Output -> L.ByteString -> IO ()
+output = maybe L.putStr L.writeFile . outFile
 
 -- | Some options related to how we get input.
 data Input = Input
