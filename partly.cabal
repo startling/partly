@@ -17,6 +17,7 @@ Executable partly
       Partly.View
     , Partly.Make
     , Partly.Json
+    , Partly.Common
   build-depends:
       base
     , aeson
