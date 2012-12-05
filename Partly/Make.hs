@@ -21,14 +21,14 @@ import Options.Applicative
 -- partly:
 import System.Disk.Partitions.MBR
 import Partly.Json
+import Partly.Common
 
 data MakeOptions = MakeOptions
-  { from    :: Maybe FilePath
-  , json    :: Bool
-  , ugly    :: Bool
-  , include :: Bool
-  , output  :: Maybe FilePath
-  , change  :: Delta }
+  { from     :: Maybe FilePath
+  , asJson   :: Bool
+  , jsonOpts :: JsonOptions
+  , outOpts  :: Output
+  , change   :: Delta }
   deriving (Eq, Show)
 
 data Delta = Delta
@@ -47,21 +47,8 @@ makeOptions = MakeOptions
     ( long "json"
     & short 'j'
     & help "Output the MBR as JSON rather than a binary blob." )
-  <*> switch
-    ( long "ugly"
-    & short 'u'
-    & help "Don't prettify the JSON before writing it." )
-  <*> switch
-    ( long "include-bootloader"
-    & short 'l'
-    & help "Include the bootloader, base64-encoded, in JSON output." )
-  <*> maybeOption
-    ( long "output"
-    & short 'o'
-    & metavar "file"
-    & help "Write to a file rather than stdout." )
-  -- TODO: should "output" be required, so that "partly make" gives you
-  -- a help screen?
+  <*> parseJsonOptions
+  <*> parseOutput
   <*> (Delta
     <$> maybeOption
       ( long "bootloader"
@@ -74,8 +61,6 @@ makeOptions = MakeOptions
       & metavar "sig"
       & help "Set the boot signature to some uint16; also accepts 't' and 'f'.")))
   where
-    maybeOption :: Mod OptionFields (Maybe String) -> Parser (Maybe String)
-    maybeOption m = nullOption $ reader (Just . Just) & m & value Nothing
     getSignature :: String -> Maybe Word16
     getSignature s = case toLower <$> s of
       "t" -> Just 0xaa55; "true" -> Just 0xaa55;
@@ -99,16 +84,9 @@ make :: MakeOptions -> IO ()
 make m = do
   base <- case from m of
     Nothing -> return nullBootRecord
-    (Just f) -> case ".json" `elem` tails f of
-       True -> L.readFile f >>= decodeJson
-       False -> fmap (runGet get) $ L.readFile f
+    (Just f) -> input (Input f)
   new <- writer <$> applyDelta (change m) base
-  maybe (L.putStr new) (flip L.writeFile new) $ output m
-  return ()
+  output (outOpts m) new
   where
     decodeJson = maybe (fail "problems reading JSON") return . decode
-    writer = case (json m, ugly m) of
-      (False, _) -> runPut . put
-      (True, True) -> encode . bootRecordToJson (include m)
-      (True, False) -> encodePretty . bootRecordToJson (include m)
-
+    writer = if asJson m then displayJson $ jsonOpts m else runPut . put
