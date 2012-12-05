@@ -23,11 +23,12 @@ import System.Disk.Partitions.MBR
 import Partly.Json
 
 data MakeOptions = MakeOptions
-  { from   :: Maybe FilePath
-  , json   :: Bool
-  , ugly   :: Bool
-  , output :: Maybe FilePath
-  , change :: Delta }
+  { from    :: Maybe FilePath
+  , json    :: Bool
+  , ugly    :: Bool
+  , include :: Bool
+  , output  :: Maybe FilePath
+  , change  :: Delta }
   deriving (Eq, Show)
 
 data Delta = Delta
@@ -50,6 +51,10 @@ makeOptions = MakeOptions
     ( long "ugly"
     & short 'u'
     & help "Don't prettify the JSON before writing it." )
+  <*> switch
+    ( long "include-bootloader"
+    & short 'l'
+    & help "Include the bootloader, base64-encoded, in JSON output." )
   <*> maybeOption
     ( long "output"
     & short 'o'
@@ -104,5 +109,6 @@ make m = do
     decodeJson = maybe (fail "problems reading JSON") return . decode
     writer = case (json m, ugly m) of
       (False, _) -> runPut . put
-      (True, True) -> encode
-      (True, False) -> encodePretty
+      (True, True) -> encode . bootRecordToJson (include m)
+      (True, False) -> encodePretty . bootRecordToJson (include m)
+
