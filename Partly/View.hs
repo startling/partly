@@ -11,14 +11,13 @@ import System.Disk.Partitions.MBR
 import Partly.Json
 import Partly.Common
 
-viewJsonOptions :: Parser (JsonOptions, Input, Output)
-viewJsonOptions = (,,)
-  <$> parseJsonOptions
-  <*> parseInput "The file to parse and inspect."
-  <*> parseOutput
+viewJsonOptions :: Parser (Input, Display)
+viewJsonOptions = (,)
+  <$> parseInput "The file to parse and inspect."
+  <*> parseDisplay
 
-viewJson :: (JsonOptions, Input, Output) -> IO ()
-viewJson (j, i, o) = input i >>= output o . displayJson j
+viewJson :: (Input, Display) -> IO ()
+viewJson (i, d) = input i >>= display d
 
 -- | We can turn a labelled field of a boot record into a command.
 fieldCommand :: Outputs b => (BootRecord -> b)
@@ -29,7 +28,7 @@ fieldCommand fn s m = command s . flip info m $
     <*> ((. fn) <$> output <$> parseOutput)
 
 data ViewCommand
-  = ViewJson (JsonOptions, Input, Output)
+  = ViewJson (Input, Display)
   | ViewField Input (BootRecord -> IO ())
 
 viewParser :: ParserInfo ViewCommand

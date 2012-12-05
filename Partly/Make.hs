@@ -24,11 +24,9 @@ import Partly.Json
 import Partly.Common
 
 data MakeOptions = MakeOptions
-  { from     :: Maybe FilePath
-  , asJson   :: Bool
-  , jsonOpts :: JsonOptions
-  , outOpts  :: Output
-  , change   :: Delta }
+  { from        :: Maybe FilePath
+  , change      :: Delta
+  , displayOpts :: Display }
   deriving (Eq, Show)
 
 data Delta = Delta
@@ -43,12 +41,6 @@ makeOptions = MakeOptions
     & short 'f'
     & metavar "file"
     & help "A bootloader to base this one on, either binary or JSON." )
-  <*> switch
-    ( long "json"
-    & short 'j'
-    & help "Output the MBR as JSON rather than a binary blob." )
-  <*> parseJsonOptions
-  <*> parseOutput
   <*> (Delta
     <$> maybeOption
       ( long "bootloader"
@@ -60,6 +52,7 @@ makeOptions = MakeOptions
       & short 's'
       & metavar "sig"
       & help "Set the boot signature to some uint16; also accepts 't' and 'f'.")))
+  <*> parseDisplay
   where
     getSignature :: String -> Maybe Word16
     getSignature s = case toLower <$> s of
@@ -84,7 +77,5 @@ make :: MakeOptions -> IO ()
 make m = do
   base <- maybe (return nullBootRecord)
     (input . flip Input Nothing) $ from m
-  new <- writer <$> applyDelta (change m) base
-  output (outOpts m) new
-  where
-    writer = if asJson m then displayJson $ jsonOpts m else runPut . put
+  new <- applyDelta (change m) base
+  display (displayOpts m) new
