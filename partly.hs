@@ -10,7 +10,7 @@ import Partly.View
 data Command
   = View ViewCommand
   | Make MakeOptions
-  deriving (Eq, Show)
+  deriving (Show)
 
 parser :: ParserInfo Command
 parser = info

@@ -1,6 +1,7 @@
 module Partly.View where
 -- base:
 import Control.Applicative
+import Text.Printf
 -- bytestring:
 import Data.ByteString (pack)
 import qualified Data.ByteString.Lazy as L
@@ -22,18 +23,41 @@ viewJson (j, i, o) = do
   mbr <- input i
   output o . displayJson j $ mbr
 
+-- | A wrapper for a labelled, displayable field of a boot record.
+data Field = (BootRecord -> Either String L.ByteString) :?: String
+
+instance Show Field where
+  show (_ :?: s) = printf "'%s'" s
+
+-- | We can turn a labelled field of a boot record into a command.
+fieldCommand :: Field -> InfoMod ViewCommand
+  -> Mod CommandFields ViewCommand
+fieldCommand f@(fn :?: s) m = command s . flip info m $
+  ViewField f
+    <$> parseInput "The file to parse and inspect"
+    <*> parseOutput
+
+infixr 8 :?:
+
 data ViewCommand
   = ViewJson (JsonOptions, Input, Output)
-  deriving (Eq, Show)
+  | ViewField Field Input Output
+  deriving (Show)
 
 viewParser :: ParserInfo ViewCommand
 viewParser = info
   ( subparser
     ( command "json"
       ( info (ViewJson <$> viewJsonOptions )
-        ( progDesc "Read a boot record into JSON." ))))
+        ( progDesc "Read a boot record into JSON." ))
+    & fieldCommand (sigFn :?: "signature")
+      ( progDesc "View the boot signature of an MBR." )))
   ( progDesc "Inspect a boot record."
   & fullDesc )
+  where
+    sigFn = Left . printf "%04x" . bootSig
 
 view :: ViewCommand -> IO ()
-view c = case c of ViewJson vj -> viewJson vj;
+view c = case c of
+  ViewJson vj -> viewJson vj
+  ViewField (fn :?: _) i o -> input i >>= outputEither o . fn
