@@ -10,14 +10,15 @@ import Partly.Json
 import Partly.Common
 
 -- | Parse the options we can use for "partly view json".
-viewJsonOptions :: Parser (Input, Display)
-viewJsonOptions = (,)
+viewJsonOptions :: Parser (Input, JsonOptions, Maybe FilePath)
+viewJsonOptions = (,,)
   <$> parseInput "The file to parse and inspect."
-  <*> parseDisplay
+  <*> parseJsonOptions
+  <*> parseOutput
 
 -- | Turn those options into an IO action.
-viewJson :: (Input, Display) -> IO ()
-viewJson (i, d) = input i >>= display d
+viewJson :: (Input, JsonOptions, Maybe FilePath) -> IO ()
+viewJson (i, j, o) = input i >>= output o . displayJson j
 
 -- | We can turn a labelled field of a boot record into a command.
 fieldCommand :: Outputs b => String -> (BootRecord -> b)
@@ -29,7 +30,7 @@ fieldCommand s fn m = command s . flip info m $
 
 -- | The type that the main program will hand to us.
 data ViewCommand
-  = ViewJson (Input, Display)
+  = ViewJson (Input, JsonOptions, Maybe FilePath)
   | ViewField Input (BootRecord -> IO ())
 
 -- | Combine all the commands together.
