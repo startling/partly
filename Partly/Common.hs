@@ -65,6 +65,10 @@ parseOutput = Output
 output :: Output -> L.ByteString -> IO ()
 output = maybe L.putStr L.writeFile . outFile
 
+-- | Output a string, given some 'Output'.
+outputString :: Output -> String -> IO ()
+outputString = maybe putStrLn writeFile . outFile
+
 -- | Some options related to how we get input.
 data Input = Input
   { inFile   :: FilePath
