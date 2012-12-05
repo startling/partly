@@ -3,8 +3,7 @@ module Partly.View where
 import Control.Applicative
 import Text.Printf
 -- bytestring:
-import Data.ByteString (pack)
-import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as B
 -- optparse-applicative:
 import Options.Applicative
 -- partly:
@@ -24,7 +23,7 @@ viewJson (j, i, o) = do
   output o . displayJson j $ mbr
 
 -- | A wrapper for a labelled, displayable field of a boot record.
-data Field = (BootRecord -> Either String L.ByteString) :?: String
+data Field = (BootRecord -> Either String B.ByteString) :?: String
 
 instance Show Field where
   show (_ :?: s) = printf "'%s'" s
@@ -51,7 +50,9 @@ viewParser = info
       ( info (ViewJson <$> viewJsonOptions )
         ( progDesc "Read a boot record into JSON." ))
     & fieldCommand (sigFn :?: "signature")
-      ( progDesc "View the boot signature of an MBR." )))
+      ( progDesc "View the boot signature of an MBR." )
+    & fieldCommand (Right . bootloader :?: "bootloader")
+      ( progDesc "View the bootloader of an MBR." )))
   ( progDesc "Inspect a boot record."
   & fullDesc )
   where

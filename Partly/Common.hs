@@ -3,6 +3,7 @@ module Partly.Common where
 import Control.Applicative
 import Data.List
 -- bytestring:
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 -- binary:
 import Data.Binary (get)
@@ -66,9 +67,9 @@ output :: Output -> L.ByteString -> IO ()
 output = maybe L.putStr L.writeFile . outFile
 
 -- | Output a string, given some 'Output'.
-outputEither :: Output -> Either String L.ByteString -> IO ()
-outputEither = maybe (putStrLn <!> L.putStr)
-  (\p -> writeFile p <!> L.writeFile p) . outFile
+outputEither :: Output -> Either String B.ByteString -> IO ()
+outputEither = maybe (putStrLn <!> B.putStr)
+  (\p -> writeFile p <!> B.writeFile p) . outFile
   where (f <!> g) e = case e of Left a -> f a; Right b -> g b
 
 -- | Some options related to how we get input.
