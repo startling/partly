@@ -85,7 +85,9 @@ instance FromJSON BootRecord where
       (Just (Bool True)) -> pure 0xaa55
       (Just (Bool False)) -> pure 0x0000
       (Just n) -> parseJSON n
-    ptt <- v .: "partitions" >>= parseJSON
+    ptt <- v .:? "partitions" >>= \x -> case x of
+      Nothing -> pure nullPartitionTable
+      Just x -> parseJSON x
     btl <- v .:? "bootloader" <&> maybe emptyBootloader Base64.decodeLenient
     return $ BootRecord btl ptt sig
     where
