@@ -31,8 +31,8 @@ viewJsonOptions = ViewJsonOptions
       & short 'u'
       & help "Don't prettify the JSON before writing it." )
   <*> switch
-      ( long "bootloader"
-      & short 'b'
+      ( long "include-bootloader"
+      & short 'l'
       & help "Include the bootloader, base64-encoded." )
   <*> maybeOption
       ( long "output"
