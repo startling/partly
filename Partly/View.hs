@@ -1,4 +1,3 @@
-{-# Language ExistentialQuantification #-}
 module Partly.View where
 -- base:
 import Control.Applicative
