@@ -66,8 +66,10 @@ output :: Output -> L.ByteString -> IO ()
 output = maybe L.putStr L.writeFile . outFile
 
 -- | Output a string, given some 'Output'.
-outputString :: Output -> String -> IO ()
-outputString = maybe putStrLn writeFile . outFile
+outputEither :: Output -> Either String L.ByteString -> IO ()
+outputEither = maybe (putStrLn <!> L.putStr)
+  (\p -> writeFile p <!> L.writeFile p) . outFile
+  where (f <!> g) e = case e of Left a -> f a; Right b -> g b
 
 -- | Some options related to how we get input.
 data Input = Input
