@@ -18,9 +18,7 @@ viewJsonOptions = (,,)
   <*> parseOutput
 
 viewJson :: (JsonOptions, Input, Output) -> IO ()
-viewJson (j, i, o) = do
-  mbr <- input i
-  output o . displayJson j $ mbr
+viewJson (j, i, o) = input i >>= output o . displayJson j
 
 -- | A wrapper for a labelled, displayable field of a boot record.
 data Field = (BootRecord -> Either String B.ByteString) :?: String
