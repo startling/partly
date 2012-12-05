@@ -1,3 +1,4 @@
+{-# Language FlexibleInstances #-}
 module Partly.Common where
 -- base:
 import Control.Applicative
@@ -62,15 +63,25 @@ parseOutput = Output
     & metavar "file"
     & help "A file to write to; defaults to stdout." )
 
--- | Output a bytestring or a string, given some 'Output'.
-output :: Output -> L.ByteString -> IO ()
-output = maybe L.putStr L.writeFile . outFile
+class Outputs o where
+  toFile :: FilePath -> o -> IO ()
+  toScreen :: o -> IO ()
 
--- | Output a string, given some 'Output'.
-outputEither :: Output -> Either String B.ByteString -> IO ()
-outputEither = maybe (putStrLn <!> B.putStr)
-  (\p -> writeFile p <!> B.writeFile p) . outFile
-  where (f <!> g) e = case e of Left a -> f a; Right b -> g b
+instance Outputs String where
+  toFile = writeFile
+  toScreen = putStrLn
+
+instance Outputs B.ByteString where
+  toFile = B.writeFile
+  toScreen = B.putStr
+
+instance Outputs L.ByteString where
+  toFile = L.writeFile
+  toScreen = L.putStr
+
+-- | Output a bytestring or a string, given some 'Output'.
+output :: Outputs o => Output -> o -> IO ()
+output = maybe toScreen toFile . outFile
 
 -- | Some options related to how we get input.
 data Input = Input
