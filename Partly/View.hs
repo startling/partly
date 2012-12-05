@@ -4,9 +4,6 @@ import Control.Applicative
 -- bytestring:
 import Data.ByteString (pack)
 import qualified Data.ByteString.Lazy as L
--- binary:
-import Data.Binary (get)
-import Data.Binary.Get
 -- optparse-applicative:
 import Options.Applicative
 -- partly:
@@ -22,7 +19,7 @@ viewJsonOptions = (,,)
 
 viewJson :: (JsonOptions, Input, Output) -> IO ()
 viewJson (j, i, o) = do
-  mbr <- runGet (get :: Get BootRecord) <$> input i
+  mbr <- input i
   output o . displayJson j $ mbr
 
 data ViewCommand

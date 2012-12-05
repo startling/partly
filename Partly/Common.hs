@@ -3,6 +3,9 @@ module Partly.Common where
 import Control.Applicative
 -- bytestring:
 import qualified Data.ByteString.Lazy as L
+-- binary:
+import Data.Binary (get)
+import Data.Binary.Get
 -- aeson:
 import Data.Aeson (Value, encode)
 import Data.Aeson.Encode.Pretty (encodePretty)
@@ -74,6 +77,6 @@ parseInput s = Input
     ( help s
     & metavar "file" )
 
--- | Get a lazy bytestring as input.
-input :: Input -> IO L.ByteString
-input = L.readFile . inFile
+-- | Get a BootRecord as input.
+input :: Input -> IO BootRecord
+input = fmap (runGet (get :: Get BootRecord)) . L.readFile . inFile
