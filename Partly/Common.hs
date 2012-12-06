@@ -42,7 +42,7 @@ parseJsonOptions = JsonOptions
   <*> switch
     ( long "with-bootloader"
     & short 'l'
-    & help "Include the bootloader, base64-encoded." )
+    & help "Include the bootloader, base64-encoded, in JSON." )
 
 displayJson :: JsonOptions -> BootRecord -> L.ByteString
 displayJson o = encoder . change
