@@ -1,6 +1,6 @@
 Name: partly
 Author: startling
-Version: 0.0.0
+Version: 1.0.0.0
 License: BSD3
 Description: View, create, and alter DOS-style MBRs.
 Cabal-Version: >= 1.2
@@ -9,9 +9,9 @@ Library
   exposed-modules:
       System.Disk.Partitions.MBR
   build-depends:
-      base
-    , bytestring
-    , binary
+      base == 4.*
+    , bytestring >= 0.9
+    , binary >= 0.6.4.0
 Executable partly
   main-is: partly.hs
   other-modules:
@@ -20,17 +20,17 @@ Executable partly
     , Partly.Json
     , Partly.Common
   build-depends:
-      base
-    , aeson
-    , aeson-pretty
-    , vector
-    , base64-bytestring
-    , optparse-applicative
+      base == 4.*
+    , aeson >= 0.6
+    , aeson-pretty >= 0.7
+    , vector >= 0.9
+    , base64-bytestring >= 0.1.2.0
+    , optparse-applicative >= 0.4.1
 Test-Suite test-partly-lib
   type: exitcode-stdio-1.0
   main-is: test-lib.hs
   build-depends:
-      QuickCheck
+      QuickCheck >= 2.5
 Test-Suite test-partly-json
   type: exitcode-stdio-1.0
   main-is: test-json.hs
@@ -38,5 +38,5 @@ Test-Suite test-partly-json
       Partly.Json
     , System.Disk.Partitions.MBR.Gen
   build-depends:
-      aeson
-    , QuickCheck
+      aeson >= 0.6
+    , QuickCheck >= 2.5
