@@ -33,12 +33,12 @@ instance Binary Timestamp where
 
 -- | A representation of the cylinder/head/sector address in MBRs.
 data CHS = CHS
-  -- | The head number.
-  { head     :: Word8
-  -- | The sector number; this is actually a six-bit number, but
-  -- Haskell doesn't have a convenient way to deal with those.
+  { -- | The head number.
+    head     :: Word8
+    -- | The sector number; this is actually a six-bit number, but
+    -- Haskell doesn't have a convenient way to deal with those.
   , sector   :: Word8
-  -- | The cylinder number; likewise, this is actually a 10-bit number.
+    -- | The cylinder number; likewise, this is actually a 10-bit number.
   , cylinder :: Word16 }
   deriving (Eq, Show)
 
@@ -58,19 +58,19 @@ instance Binary CHS where
     
 -- | Partition entries themselves are somewhat intricate.
 data PartitionEntry = PartitionEntry
-  -- | A bitfield describing this partition. An 0x00 here means it's inactive;
-  -- having bit 7 set (i.e. > 0x80) means bootable; anything less is invalid.
-  { status        :: Word8
-  -- | The CHS address of the first absolute sector of the partition.
+  { -- | A bitfield describing this partition. An 0x00 here means it's inactive;
+    -- having bit 7 set (i.e. > 0x80) means bootable; anything less is invalid.
+    status        :: Word8
+    -- | The CHS address of the first absolute sector of the partition.
   , chsFirst      :: CHS
-  -- | A partition type; for specifics, see the following document:
-  -- http://www.win.tue.nl/~aeb/partitions/partition_types-1.html
+    -- | A partition type; for specifics, see the following document:
+    -- http://www.win.tue.nl/~aeb/partitions/partition_types-1.html
   , partitionType :: Word8
-  -- | The CHS address of the last absolute sector of the partition.
+    -- | The CHS address of the last absolute sector of the partition.
   , chsLast       :: CHS
-  -- | The logical block address of the first absolute sector.
+    -- | The logical block address of the first absolute sector.
   , lbaFirst      :: Word32
-  -- | The number of sectors in the partition.
+    -- | The number of sectors in the partition.
   , sectors       :: Word32 }
   deriving (Eq, Show)
 
@@ -106,15 +106,15 @@ nullPartitionTable = PartitionTable n n n n
 
 -- | The structure of a Master Boot Record is as follows...
 data BootRecord = BootRecord
-  -- | The first piece of data on a disk with a Master Boot Record is some
-  -- bootloader code that gets loaded to address 0x7c00 in memory. N.B:
-  -- this may include the data for the Windows timestamp, if it exists. It
-  -- will also include the optional disk signature, if it exists -- thus this
-  -- field is always 446 bytes long.
-  { bootloader :: ByteString
-  -- | Four partition table entries.
+  { -- | The first piece of data on a disk with a Master Boot Record is some
+    -- bootloader code that gets loaded to address 0x7c00 in memory. N.B:
+    -- this may include the data for the Windows timestamp, if it exists. It
+    -- will also include the optional disk signature, if it exists -- thus this
+    -- field is always 446 bytes long.
+    bootloader :: ByteString
+    -- | Four partition table entries.
   , partitions :: PartitionTable
-  -- | Finally, the boot signature. 
+    -- | Finally, the boot signature. 
   , bootSig    :: Word16 }
   deriving (Eq, Show)
 
