@@ -1,6 +1,7 @@
 Name: partly
 Author: startling
 Version: 0.0.0
+License: BSD3
 Description: View, create, and alter DOS-style MBRs.
 Cabal-Version: >= 1.2
 Build-Type: Simple
