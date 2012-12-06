@@ -34,7 +34,15 @@ Godspeed and good luck.
 partly make --from disk.img --some-options -o mbr.bin
 dd if=mbr.bin of=disk.img bs=512 count=1 conv=notrunc
 ````
-    
+
+## Donations
+
+If you found this useful, I'd love if you [left me a tip][]. If not,
+feel free to leave a [bug report][].
+
+[left me a tip]: https://www.gittip.com/startling/
+[bug report]: https://github.com/startling/partly/issues
+
 ## Todo
 
 * map partition type codes to readable strings -- this is an expansive
