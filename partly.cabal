@@ -1,9 +1,18 @@
 Name: partly
-Author: startling
+Author: Tim Dixon <tdixon51793@gmail.com>
+Maintainer: Tim Dixon <tdixon51793@gmail.com>
 Version: 1.0.0.0
 License: BSD3
-Description: View, create, and alter DOS-style MBRs.
+License-File: LICENSE.txt
+Copyright: (c) 2012 Tim Dixon
+Category: System, Filesystem
+Synopsis: Inspect, create, and alter MBRs.
+Description: A Haskell library and command-line tool to create, inspect, and alter master boot records.
+Homepage: https://github.com/startling/partly
+Bug-Reports: https://github.com/startling/partly/issues
+Tested-With: GHC == 7.4.2
 Cabal-Version: >= 1.2
+Stability: experimental
 Build-Type: Simple
 Library
   exposed-modules:
