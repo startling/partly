@@ -11,14 +11,14 @@ Description: A Haskell library and command-line tool to create, inspect, and alt
 Homepage: https://github.com/startling/partly
 Bug-Reports: https://github.com/startling/partly/issues
 Tested-With: GHC == 7.4.2
-Cabal-Version: >= 1.2
+Cabal-Version: >= 1.8
 Stability: experimental
 Build-Type: Simple
 Library
   exposed-modules:
       System.Disk.Partitions.MBR
   build-depends:
-      base == 4.*
+      base >= 4 && < 5
     , bytestring >= 0.9
     , binary >= 0.6.4.0
 Executable partly
@@ -29,8 +29,7 @@ Executable partly
     , Partly.Json
     , Partly.Common
   build-depends:
-      base == 4.*
-    , aeson >= 0.6
+      aeson >= 0.6
     , aeson-pretty >= 0.7
     , vector >= 0.9
     , base64-bytestring >= 0.1.2.0
@@ -49,3 +48,6 @@ Test-Suite test-partly-json
   build-depends:
       aeson >= 0.6
     , QuickCheck >= 2.5
+Source-Repository head
+  type: git
+  location: https://github.com/startling/partly.git
