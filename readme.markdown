@@ -35,6 +35,22 @@ partly make --from disk.img --some-options -o mbr.bin
 dd if=mbr.bin of=disk.img bs=512 count=1 conv=notrunc
 ````
 
+## Installation
+
+You should probably have [GHC][] and [cabal-install][] installed,
+firstly; your distribution (or homebrew, on OS X) probably provides
+these. Then `cabal install partly` will install the latest release
+from Hackage.
+
+If you want to build from source, `cabal configure` and then `cabal
+build` will build it to `dist/` and register it in place.
+
+To run the tests, re-configure with `cabal configure --enable-tests`,
+`cabal build`, and `cabal test`.
+
+[GHC]: http://www.haskell.org/ghc/
+[cabal-install]: http://hackage.haskell.org/trac/hackage/wiki/CabalInstall
+
 ## Donations
 
 If you found this useful, I'd love if you [left me a tip][]. If not,
