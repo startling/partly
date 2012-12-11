@@ -56,6 +56,14 @@ viewPartitions br = unlines
   , viewPartition 4 $ fourth pt ]
   where pt = partitions br
 
+-- | Pretty-print the DOS-style timestamp of a boot record.
+viewTimestamp :: BootRecord -> String
+viewTimestamp = maybe "No timestamp." see . getTimestamp
+  where
+    see (Timestamp p s m h) = printf
+      "Drive number: %03d\nHour: %03d\nMinute: %03d\nSecond: %03d"
+      p s m h  
+
 -- | The type that the main program will hand to us.
 data ViewCommand
   = ViewJson (Input, JsonOptions, Maybe FilePath)
@@ -74,7 +82,9 @@ viewParser = info
     & fieldCommand "bootloader" bootloader
       ( progDesc "View the bootloader of an MBR." )
     & fieldCommand "partitions" viewPartitions
-      ( progDesc "Pretty-print the partition table." )))
+      ( progDesc "Pretty-print the partition table." )
+    & fieldCommand "timestamp" viewTimestamp
+      ( progDesc "View the DOS-style timestamp on this MBR." )))
   ( progDesc "Inspect a boot record."
   & fullDesc )
 
