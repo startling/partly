@@ -29,7 +29,10 @@ Executable partly
     , Partly.Json
     , Partly.Common
   build-depends:
-      aeson >= 0.6
+      base >= 4 && < 5
+    , bytestring >= 0.9
+    , binary >= 0.6.4.0
+    , aeson >= 0.6
     , aeson-pretty >= 0.7
     , vector >= 0.9
     , base64-bytestring >= 0.1.2.0
@@ -38,7 +41,10 @@ Test-Suite test-partly-lib
   type: exitcode-stdio-1.0
   main-is: test-lib.hs
   build-depends:
-      QuickCheck >= 2.5
+      base >= 4 && < 5
+    , bytestring >= 0.9
+    , binary >= 0.6.4.0
+    , QuickCheck >= 2.5
 Test-Suite test-partly-json
   type: exitcode-stdio-1.0
   main-is: test-json.hs
@@ -46,7 +52,12 @@ Test-Suite test-partly-json
       Partly.Json
     , System.Disk.Partitions.MBR.Gen
   build-depends:
-      aeson >= 0.6
+      base >= 4 && < 5
+    , bytestring >= 0.9
+    , binary >= 0.6.4.0
+    , aeson >= 0.6
+    , vector >= 0.9
+    , base64-bytestring >= 0.1.2.0
     , QuickCheck >= 2.5
 Source-Repository head
   type: git
