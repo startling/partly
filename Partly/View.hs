@@ -62,7 +62,12 @@ viewTimestamp = maybe "No timestamp." see . getTimestamp
   where
     see (Timestamp p s m h) = printf
       "Drive number: %03d\nHour: %03d\nMinute: %03d\nSecond: %03d"
-      p s m h  
+      p s m h
+
+-- | Show the optional 'disk signature' of a boot record.
+viewDiskSignature :: BootRecord -> String
+viewDiskSignature = maybe "No disk signature" see . getDiskSignature
+  where see = printf "%08x"
 
 -- | The type that the main program will hand to us.
 data ViewCommand
@@ -84,7 +89,9 @@ viewParser = info
     & fieldCommand "partitions" viewPartitions
       ( progDesc "Pretty-print the partition table." )
     & fieldCommand "timestamp" viewTimestamp
-      ( progDesc "View the DOS-style timestamp on this MBR." )))
+      ( progDesc "View the DOS-style timestamp on this MBR." )
+    & fieldCommand "disk-signature" viewDiskSignature
+      ( progDesc "View the optional disk signature." )))
   ( progDesc "Inspect a boot record."
   & fullDesc )
 
