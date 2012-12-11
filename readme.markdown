@@ -22,9 +22,18 @@ alters the file whose MBR you want to read.
   of the MBR) to a file or to stdout.
 * `partly view partitions` pretty-prints the partition table, à la
   `fdisk`.
+* `partly view timestamp` views the obsolete DOS-style
+  [disk timestamp][]. N.B. that there may be false positives here.
+* `partly view disk-signature` prints the optional [disk signature][] used by 
+  Windows NT/2000/Vista/7 and some other things (?). N.B. that there
+  may be false positives here, too, especially when those bytes are
+  zeroed.
   
 `partly make` is for creating MBRs, based on existing ones or not. You
 can see the specific flags and arguments with `partly make --help`.
+
+[disk timestamp]: http://thestarman.pcministry.com/asm/mbr/mystery.htm
+[disk signature]: http://diddy.boot-land.net/firadisk/files/signature.htm
 
 ### But I really want to change the MBR of an image!
 
@@ -68,7 +77,5 @@ feel free to leave a [bug report][].
 * `partly make --first-partition fs.img` to automagically tailor an
   MBR for a filesystem image.
 * Support for GUID partition tables.
-* Add support for viewing the DOS-style timestamp and disk signatures
-  in the command-line tool.
 
 [partition-types]: http://www.win.tue.nl/~aeb/partitions/partition_types-1.html
