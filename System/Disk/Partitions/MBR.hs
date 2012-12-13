@@ -18,7 +18,7 @@ import Data.Binary.Put
 
 -- | The so-called mystery bytes on Windows 95B, 98, 98SE, and Me --
 -- in fact, they're a timestamp and a drive number. 
--- See http://thestarman.pcministry.com/asm/mbr/mystery.htm .
+-- See <http://thestarman.pcministry.com/asm/mbr/mystery.htm>.
 data Timestamp = Timestamp
   { physicalDrive :: Word8
   , seconds       :: Word8
@@ -31,7 +31,7 @@ instance Binary Timestamp where
   put = (sequence_ .) . sequence $ [put . physicalDrive
     , put . seconds, put . minutes, put . hours]
 
--- | A representation of the cylinder/head/sector address in MBRs.
+-- | A representation of the cylinder\/head\/sector addresses in MBRs.
 data CHS = CHS
   { -- | The head number.
     head     :: Word8
@@ -59,12 +59,12 @@ instance Binary CHS where
 -- | Partition entries themselves are somewhat intricate.
 data PartitionEntry = PartitionEntry
   { -- | A bitfield describing this partition. An 0x00 here means it's inactive;
-    -- having bit 7 set (i.e. > 0x80) means bootable; anything less is invalid.
+    -- having bit 7 set (e.g. 0x80) means bootable; anything else is invalid.
     status        :: Word8
     -- | The CHS address of the first absolute sector of the partition.
   , chsFirst      :: CHS
     -- | A partition type; for specifics, see the following document:
-    -- http://www.win.tue.nl/~aeb/partitions/partition_types-1.html
+    -- <http://www.win.tue.nl/~aeb/partitions/partition_types-1.html>
   , partitionType :: Word8
     -- | The CHS address of the last absolute sector of the partition.
   , chsLast       :: CHS
@@ -89,7 +89,7 @@ nullPartition = PartitionEntry 0 (CHS 0 0 0) 0 (CHS 0 0 0) 0 0
 bootable :: PartitionEntry -> Bool
 bootable = ((== 1) . (`shiftR` 7)) . status
 
--- | An MBR partition table consists of (up to?) four partition entries.
+-- | An MBR partition table consists of four partition entries.
 data PartitionTable = PartitionTable
   { first, second, third, fourth :: PartitionEntry }
   deriving (Eq, Show)
@@ -107,7 +107,7 @@ nullPartitionTable = PartitionTable n n n n
 -- | The structure of a Master Boot Record is as follows...
 data BootRecord = BootRecord
   { -- | The first piece of data on a disk with a Master Boot Record is some
-    -- bootloader code that gets loaded to address 0x7c00 in memory. N.B:
+    -- bootloader code that gets loaded to address 0x7c00 in memory. N.B.
     -- this may include the data for the Windows timestamp, if it exists. It
     -- will also include the optional disk signature, if it exists -- thus this
     -- field is always 446 bytes long.
