@@ -60,14 +60,6 @@ To run the tests, re-configure with `cabal configure --enable-tests`,
 [GHC]: http://www.haskell.org/ghc/
 [cabal-install]: http://hackage.haskell.org/trac/hackage/wiki/CabalInstall
 
-## Donations
-
-If you found this useful, I'd love if you [left me a tip][]. If not,
-feel free to leave a [bug report][].
-
-[left me a tip]: https://www.gittip.com/startling/
-[bug report]: https://github.com/startling/partly/issues
-
 ## Todo
 
 * map partition type codes to readable strings -- this is an expansive
